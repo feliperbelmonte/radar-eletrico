@@ -1,0 +1,312 @@
+{
+ "data": [
+  {
+   "numeroControlePNCP": "00000000000100-1-000001/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 1,
+   "modalidadeId": 8,
+   "modalidadeNome": "Dispensa",
+   "objetoCompra": "Contratação de empresa para elaboração de projeto elétrico e SPDA da nova sede da Câmara Municipal",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 38500.0,
+   "dataEncerramentoProposta": "2026-11-12T09:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Ponta Grossa",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000002/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 2,
+   "modalidadeId": 6,
+   "modalidadeNome": "Pregão - Eletrônico",
+   "objetoCompra": "Instalação de sistema de energia solar fotovoltaica de 45 kWp na Escola Municipal Rui Barbosa, com fornecimento de materiais e mão de obra",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 189000.0,
+   "dataEncerramentoProposta": "2026-11-03T14:00:00",
+   "dataPublicacaoPncp": "2026-10-28T08:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE JOINVILLE"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "SC",
+    "municipioNome": "Joinville",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000003/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 3,
+   "modalidadeId": 4,
+   "modalidadeNome": "Concorrência - Eletrônica",
+   "objetoCompra": "Implantação de usina fotovoltaica de 1,5 MWp para autoconsumo remoto",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 6200000.0,
+   "dataEncerramentoProposta": "2026-11-20T10:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Ponta Grossa",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000004/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 4,
+   "modalidadeId": 4,
+   "modalidadeNome": "Concorrência - Eletrônica",
+   "objetoCompra": "Elaboração de projeto de instalações elétricas e execução da obra de reforma do Centro de Saúde",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 420000.0,
+   "dataEncerramentoProposta": "2026-11-18T08:30:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "MG",
+    "municipioNome": "Lavras",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000005/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 5,
+   "modalidadeId": 6,
+   "modalidadeNome": "Pregão - Eletrônico",
+   "objetoCompra": "Aquisição de materiais elétricos (cabos, disjuntores e quadros de distribuição) para manutenção",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 95000.0,
+   "dataEncerramentoProposta": "2026-11-10T10:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Ponta Grossa",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000006/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 6,
+   "modalidadeId": 8,
+   "modalidadeNome": "Dispensa",
+   "objetoCompra": "Projeto elétrico do ginásio poliesportivo",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 22000.0,
+   "dataEncerramentoProposta": "2026-10-20T10:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Ponta Grossa",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000007/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 7,
+   "modalidadeId": 6,
+   "modalidadeNome": "Pregão - Eletrônico",
+   "objetoCompra": "Locação de usina fotovoltaica já instalada para geração de créditos de energia",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 218000.0,
+   "dataEncerramentoProposta": "2026-11-15T10:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "GO",
+    "municipioNome": "Ponta Grossa",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000008/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 8,
+   "modalidadeId": 12,
+   "modalidadeNome": "Credenciamento",
+   "objetoCompra": "Manutenção preventiva e corretiva da subestação abaixadora de 300 kVA do Hospital Regional",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 74000.0,
+   "dataEncerramentoProposta": "2026-12-01T10:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Cascavel",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000009/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 9,
+   "modalidadeId": 4,
+   "modalidadeNome": "Concorrência - Eletrônica",
+   "objetoCompra": "Reforma de subestação de energia de 1.500 kVA da Estação de Tratamento",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 980000.0,
+   "dataEncerramentoProposta": "2026-11-25T10:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Ponta Grossa",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000010/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 10,
+   "modalidadeId": 4,
+   "modalidadeNome": "Concorrência - Eletrônica",
+   "objetoCompra": "Execução de instalações elétricas residenciais em 40 unidades habitacionais do Conjunto Habitacional Vila Nova",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 310000.0,
+   "dataEncerramentoProposta": "2026-12-10T09:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Guarapuava",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000011/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 11,
+   "modalidadeId": 8,
+   "modalidadeNome": "Dispensa",
+   "objetoCompra": "Elaboração de laudo de SPDA (NBR 5419) e prontuário das instalações elétricas NR-10 das escolas municipais",
+   "informacaoComplementar": "Exige-se atestado de capacidade técnica compatível.",
+   "valorTotalEstimado": 29800.0,
+   "dataEncerramentoProposta": "2026-11-04T10:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "RS",
+    "municipioNome": "Passo Fundo",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000012/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 12,
+   "modalidadeId": 8,
+   "modalidadeNome": "Dispensa",
+   "objetoCompra": "Contratação de serviço de manutenção de rede lógica e cabeamento estruturado",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 50000.0,
+   "dataEncerramentoProposta": "2026-11-10T10:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Ponta Grossa",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000001/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 1,
+   "modalidadeId": 8,
+   "modalidadeNome": "Dispensa",
+   "objetoCompra": "Contratação de empresa para elaboração de projeto elétrico e SPDA da nova sede da Câmara Municipal",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": 38500.0,
+   "dataEncerramentoProposta": "2026-11-12T09:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Ponta Grossa",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  },
+  {
+   "numeroControlePNCP": "00000000000100-1-000013/2026",
+   "anoCompra": 2026,
+   "sequencialCompra": 13,
+   "modalidadeId": 8,
+   "modalidadeNome": "Dispensa",
+   "objetoCompra": "Projeto elétrico com <script>alert(1)</script> no texto",
+   "informacaoComplementar": null,
+   "valorTotalEstimado": null,
+   "dataEncerramentoProposta": "2026-11-30T10:00:00",
+   "dataPublicacaoPncp": "2026-10-20T10:00:00",
+   "orgaoEntidade": {
+    "cnpj": "00000000000100",
+    "razaoSocial": "MUNICIPIO DE EXEMPLO"
+   },
+   "unidadeOrgao": {
+    "ufSigla": "PR",
+    "municipioNome": "Ponta Grossa",
+    "nomeUnidade": "Secretaria de Obras"
+   },
+   "linkSistemaOrigem": null
+  }
+ ]
+}

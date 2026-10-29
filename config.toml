@@ -1,0 +1,109 @@
+# Radar Elétrico — tudo que define O QUE o robô procura fica aqui.
+# Para mudar o foco da busca, edite este arquivo (não precisa mexer no radar.py).
+#
+# Termos: comparados sem acento e sem maiúsculas, palavra inteira.
+# Termo terminado em * casa como prefixo ("fotovolta*" pega fotovoltaica/fotovoltaico).
+# Hífen e barra viram espaço ("nr-10" casa "NR-10", "NR 10" e "NR/10").
+
+[busca]
+# Janela: propostas que encerram até hoje + N dias.
+dias_a_frente = 60
+# Códigos de modalidade do PNCP, na ordem em que são consultados:
+# 8 Dispensa, 12 Credenciamento, 6 Pregão Eletrônico, 9 Inexigibilidade, 4 Concorrência Eletrônica.
+modalidades = [8, 12, 6, 9, 4]
+tamanho_pagina = 50            # máximo aceito pela API
+max_paginas_por_modalidade = 400
+timeout_segundos = 60
+tentativas_por_pagina = 4      # com espera crescente entre tentativas
+pausa_entre_paginas = 0.3      # segundos, para não sobrecarregar a API
+
+[perfil]
+# Limite anual de dispensa para serviços de engenharia (atualizado por decreto todo ano).
+limite_dispensa_engenharia = 130984.20
+# Acima deste valor estimado, um item do Grupo 2 vira "atenção" (escala grande para um profissional).
+valor_escala_grande = 1500000.0
+
+[status]
+dias_urgente = 7   # prazo em até N dias → "urgente"
+dias_novo = 3      # publicado no PNCP há até N dias → "novo"
+
+[filtros]
+# Descarta o item se aparecer qualquer um destes termos.
+excluir = [
+  "locacao de usina*", "locacao de sistema*", "locacao de equipamento*", "aluguel de*",
+  "creditos de energia", "compensacao de credito*", "cessao de credito*",
+  "cabeamento estruturado", "rede logica", "rede de dados",
+  "aquisicao de materia*", "compra de materia*", "aquisicao de equipamento*",
+]
+# Compra pura de material (sem serviço) é descartada: se aparecer um termo de "compra"
+# e NENHUM termo de "servico", o item sai.
+compra = ["aquisicao", "compra", "fornecimento", "registro de preco*"]
+servico = [
+  "servico*", "projeto*", "elaboracao", "instalac*", "execucao", "laudo*",
+  "manutenc*", "implantac*", "obra", "obras", "reforma*", "inspec*", "vistoria*",
+]
+
+# ---------------------------------------------------------------------------
+# Escopos. Ordem importa: o primeiro que casar define o item, por isso os do
+# Grupo 2 (projeto + execução) vêm antes do Grupo 1 (só projeto).
+# ---------------------------------------------------------------------------
+
+[[escopo]]
+id = "solar"
+grupo = 2
+rotulo = "Solar até 75kWp"
+termos = [
+  "fotovolta*", "energia solar", "paineis solares", "placas solares", "modulos solares",
+  "geracao distribuida", "microgeracao", "ufv", "kit solar", "kits solares",
+  "sistema de energia solar", "usina solar",
+]
+potencia_max_kw = 75
+# Escala grande → atenção
+escala = ["usinas"]
+
+[[escopo]]
+id = "subestacao"
+grupo = 2
+rotulo = "Subestação até 1MVA"
+termos = ["subestac*", "cabine primaria", "cabines primarias"]
+potencia_max_kva = 1000
+escala = ["subestacoes", "cabines primarias"]
+
+[[escopo]]
+id = "residencial"
+grupo = 2
+rotulo = "Residencial"
+termos = [
+  "instalacao eletrica residencial", "instalacoes eletricas residenciais",
+  "rede eletrica residencial", "eletrica predial residencial",
+  "unidades habitacionais", "casas populares", "conjunto habitacional", "habitacao de interesse social",
+]
+# Estes termos de habitação só contam se o texto também falar de elétrica.
+exige_tambem = ["eletric*"]
+escala = ["centenas de"]
+
+[[escopo]]
+id = "projeto"
+grupo = 1
+rotulo = "Projeto elétrico"
+termos = [
+  "projeto eletrico", "projetos eletricos", "projeto de instalacoes eletricas",
+  "projetos de instalacoes eletricas", "projeto executivo eletrico",
+  "spda", "para raios", "pararaios", "nbr 5419", "descargas atmosfericas",
+  "nr 10", "prontuario eletrico", "prontuario das instalacoes eletricas",
+  "laudo eletrico", "laudos eletricos", "laudo de instalacoes eletricas",
+  "memorial descritivo eletrico", "projeto de iluminacao", "projetos de iluminacao",
+  "projeto luminotecnico", "quadro de distribuicao", "quadros de distribuicao",
+  "instalacoes eletricas de baixa tensao",
+]
+# No Grupo 1 o Felipe só faz o projeto: se o objeto incluir execução, vira "atenção".
+execucao = [
+  "execucao", "obra", "obras", "construcao", "fornecimento e instalacao",
+  "reforma", "reformas", "implantacao", "execucao dos servicos",
+]
+
+[saida]
+painel_url = "https://claude.ai/code/artifact/3acf32e4-7a26-420c-927e-b638ded6802f"
+proxima_execucao = "todos os dias, 08h e 18h (horário de Brasília)"
+max_caracteres_objeto = 500
+destaques_na_notificacao = 5

@@ -1,0 +1,616 @@
+<title>Radar Elétrico</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Libre+Franklin:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --border: #dbe0e8;
+    --text: #171b21;
+    --text-muted: #5a6270;
+    --text-faint: #8891a0;
+    --accent: #1f5fd6;
+    --accent-ink: #0f3f9e;
+    --accent-soft: #e7eefd;
+    --accent-line: #2f6fed;
+
+    --urgente: #c5321f;
+    --urgente-soft: #fbe7e3;
+    --urgente-line: #d64b36;
+    --atencao: #a3660a;
+    --atencao-soft: #faefda;
+    --atencao-line: #cb8a1f;
+    --novo: #1f7a4d;
+    --novo-soft: #e3f4ea;
+    --novo-line: #2f9e5c;
+
+    --shadow: 0 1px 2px rgba(23, 27, 33, 0.04), 0 8px 24px -12px rgba(23, 27, 33, 0.14);
+    --radius: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116;
+      --surface: #161a21;
+      --surface-2: #1d222b;
+      --border: #2a2f3a;
+      --text: #e9ecf1;
+      --text-muted: #a4abb8;
+      --text-faint: #6c7381;
+      --accent: #6d9dff;
+      --accent-ink: #a9c4ff;
+      --accent-soft: #182545;
+      --accent-line: #4d7fe8;
+
+      --urgente: #ff8a75;
+      --urgente-soft: #3a1c19;
+      --urgente-line: #b9503b;
+      --atencao: #ffbf6b;
+      --atencao-soft: #362512;
+      --atencao-line: #b98026;
+      --novo: #7fe0ac;
+      --novo-soft: #12301f;
+      --novo-line: #2f9e5c;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0e1116;
+    --surface: #161a21;
+    --surface-2: #1d222b;
+    --border: #2a2f3a;
+    --text: #e9ecf1;
+    --text-muted: #a4abb8;
+    --text-faint: #6c7381;
+    --accent: #6d9dff;
+    --accent-ink: #a9c4ff;
+    --accent-soft: #182545;
+    --accent-line: #4d7fe8;
+
+    --urgente: #ff8a75;
+    --urgente-soft: #3a1c19;
+    --urgente-line: #b9503b;
+    --atencao: #ffbf6b;
+    --atencao-soft: #362512;
+    --atencao-line: #b98026;
+    --novo: #7fe0ac;
+    --novo-soft: #12301f;
+    --novo-line: #2f9e5c;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Libre Franklin", system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent-soft); color: var(--accent-ink); }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent-line);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 20px 64px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+
+  /* ---------- header ---------- */
+  header.top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 24px;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 40px; height: 40px;
+    border-radius: 9px;
+    background: linear-gradient(155deg, var(--accent) 0%, var(--accent-ink) 100%);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--shadow);
+  }
+  .brand-mark svg { width: 20px; height: 20px; }
+  h1 {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 1.55rem;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .brand-sub { color: var(--text-muted); font-size: 0.86rem; margin-top: 2px; }
+
+  .run-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-align: right;
+  }
+  .run-meta .row { display: flex; gap: 8px; align-items: baseline; }
+  .run-meta .label { color: var(--text-faint); }
+  .run-meta .value {
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ---------- stat cards ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--stripe, var(--border));
+  }
+  .stat.total { --stripe: var(--accent-line); }
+  .stat.urgente { --stripe: var(--urgente-line); }
+  .stat.atencao { --stripe: var(--atencao-line); }
+  .stat.novo { --stripe: var(--novo-line); }
+  .stat .n {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .stat.urgente .n { color: var(--urgente); }
+  .stat.atencao .n { color: var(--atencao); }
+  .stat.novo .n { color: var(--novo); }
+  .stat .lbl {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- run note ---------- */
+  .run-note {
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    border: 1px solid var(--atencao-line);
+    background: var(--atencao-soft);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .run-note strong { color: var(--atencao); }
+  .run-note.ok { border-color: var(--novo-line); background: var(--novo-soft); }
+  .run-note.ok strong { color: var(--novo); }
+  .run-note.crit { border-color: var(--urgente-line); background: var(--urgente-soft); }
+  .run-note.crit strong { color: var(--urgente); }
+
+  /* ---------- filters ---------- */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .filters input[type="search"] {
+    flex: 1 1 220px;
+    min-width: 160px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.88rem;
+  }
+  .chip-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--accent-line); color: var(--text); }
+  .chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .filters select {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.85rem;
+  }
+  .result-count {
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    margin: 0 0 10px 2px;
+  }
+
+  /* ---------- table ---------- */
+  .table-shell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: auto;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  thead th {
+    text-align: left;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
+    font-weight: 600;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    position: sticky;
+    top: 0;
+  }
+  tbody td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    font-size: 0.88rem;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .badge.urgente { background: var(--urgente-soft); color: var(--urgente); border-color: var(--urgente-line); }
+  .badge.atencao { background: var(--atencao-soft); color: var(--atencao); border-color: var(--atencao-line); }
+  .badge.novo { background: var(--novo-soft); color: var(--novo); border-color: var(--novo-line); }
+  .badge.normal { background: var(--surface-2); color: var(--text-muted); border-color: var(--border); }
+
+  .grupo-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 5px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    white-space: nowrap;
+  }
+  .grupo-tag.g1 { background: var(--surface-2); color: var(--text-muted); }
+
+  .objeto-cell { max-width: 360px; min-width: 0; }
+  .objeto-txt { color: var(--text); }
+  .orgao-cell .orgao-nome { font-weight: 600; }
+  .orgao-cell .orgao-loc { color: var(--text-muted); font-size: 0.82rem; margin-top: 2px; }
+  .num-cell { font-family: "IBM Plex Mono", monospace; font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; }
+  .valor-cell { font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
+  .prazo-cell { white-space: nowrap; font-family: "IBM Plex Mono", monospace; }
+  .prazo-dias { display: block; font-size: 0.76rem; color: var(--text-faint); font-family: "Libre Franklin", sans-serif; }
+  .atestado-flag { color: var(--urgente); font-size: 0.76rem; font-weight: 600; margin-top: 4px; }
+  .fonte-flag { color: var(--text-faint); font-size: 0.72rem; margin-top: 3px; }
+
+  .empty-row td {
+    text-align: center;
+    padding: 46px 20px;
+    color: var(--text-muted);
+  }
+
+  footer.note {
+    margin-top: 22px;
+    font-size: 0.78rem;
+    color: var(--text-faint);
+    line-height: 1.6;
+  }
+  footer.note strong { color: var(--text-muted); }
+
+  @media (max-width: 720px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    header.top { align-items: flex-start; }
+    .run-meta { align-items: flex-start; text-align: left; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" fill="#fff"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Radar Elétrico</h1>
+        <div class="brand-sub">Licitações com proposta aberta · elétrica &amp; solar · Brasil inteiro</div>
+      </div>
+    </div>
+    <div class="run-meta">
+      <div class="row"><span class="label">última varredura</span><span class="value" id="lastRunLabel">—</span></div>
+      <div class="row"><span class="label">próxima</span><span class="value" id="nextRunLabel">—</span></div>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat total">
+      <div class="n" id="statTotal">0</div>
+      <div class="lbl">Abertas agora</div>
+    </div>
+    <div class="stat urgente">
+      <div class="n" id="statUrgente">0</div>
+      <div class="lbl">Urgentes (≤7 dias)</div>
+    </div>
+    <div class="stat atencao">
+      <div class="n" id="statAtencao">0</div>
+      <div class="lbl">Atenção</div>
+    </div>
+    <div class="stat novo">
+      <div class="n" id="statNovo">0</div>
+      <div class="lbl">Novas (≤3 dias)</div>
+    </div>
+  </div>
+
+  <div class="run-note" id="runNote" hidden></div>
+
+  <div class="filters">
+    <input type="search" id="searchInput" placeholder="Buscar por órgão, objeto, município ou UF…" />
+    <div class="chip-group" id="grupoChips">
+      <button class="chip active" data-grupo="todos">Todos os grupos</button>
+      <button class="chip" data-grupo="1">Grupo 1 · Só projeto</button>
+      <button class="chip" data-grupo="2">Grupo 2 · Projeto/execução</button>
+    </div>
+    <div class="chip-group" id="statusChips">
+      <button class="chip active" data-status="todos">Todos os status</button>
+      <button class="chip" data-status="urgente">Urgente</button>
+      <button class="chip" data-status="atencao">Atenção</button>
+      <button class="chip" data-status="novo">Novo</button>
+    </div>
+    <select id="ufSelect">
+      <option value="todos">Todas as UF</option>
+    </select>
+  </div>
+
+  <p class="result-count" id="resultCount"></p>
+
+  <div class="table-shell">
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Órgão / local</th>
+          <th>Objeto</th>
+          <th>Modalidade</th>
+          <th>Valor</th>
+          <th>Prazo proposta</th>
+          <th>Link</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <footer class="note">
+    <strong>Como ler:</strong> Grupo 1 = Felipe só pode elaborar o projeto/laudo (sem atestado de execução). Grupo 2 = Felipe tem ART/atestado próprio para tocar projeto e/ou execução em solar fotovoltaico até 75 kWp, subestações até 1 MVA, e instalações elétricas residenciais.
+    &quot;Atenção&quot; sinaliza objeto fora do escopo executável, escala grande demais para profissional individual, ou exigência de atestado em área sem comprovação. Fonte: API oficial de consulta do PNCP, varrida por um robô no GitHub (repositório radar-eletrico) duas vezes por dia; só entram editais com prazo de proposta futuro. Os filtros de escopo ficam no arquivo config.toml do repositório.
+  </footer>
+
+</div>
+
+<script>
+/* LICITACOES_DATA_START */
+// Bloco reescrito a cada varredura pelo radar.py — não editar à mão.
+const DATA = [];
+const LAST_RUN = "2026-01-01T00:00:00-03:00";
+const NEXT_RUN_LABEL = "todos os dias, 08h e 18h (horário de Brasília)";
+const RUN_NOTE = null;
+/* LICITACOES_DATA_END */
+
+const fmtBRL = (v) => v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+const fmtDate = (iso) => {
+  if (!iso) return "—";
+  const d = new Date(iso + (iso.length <= 10 ? "T00:00:00" : ""));
+  if (isNaN(d)) return "—";
+  const dia = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  if (iso.length <= 10 || (d.getHours() === 0 && d.getMinutes() === 0)) return dia;
+  return dia + " " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+};
+const daysUntil = (iso) => {
+  if (!iso) return null;
+  const target = new Date(iso.slice(0, 10) + "T00:00:00");
+  const now = new Date(LAST_RUN.slice(0, 10) + "T00:00:00");
+  return Math.round((target - now) / 86400000);
+};
+
+const STATUS_LABEL = { urgente: "Urgente", atencao: "Atenção", novo: "Novo", normal: "Aberto" };
+
+function renderMeta() {
+  const d = new Date(LAST_RUN);
+  document.getElementById("lastRunLabel").textContent = isNaN(d)
+    ? LAST_RUN
+    : d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) + " (BRT)";
+  document.getElementById("nextRunLabel").textContent = NEXT_RUN_LABEL;
+}
+
+function renderStats(items) {
+  document.getElementById("statTotal").textContent = items.length;
+  document.getElementById("statUrgente").textContent = items.filter(i => i.status === "urgente").length;
+  document.getElementById("statAtencao").textContent = items.filter(i => i.status === "atencao").length;
+  document.getElementById("statNovo").textContent = items.filter(i => i.status === "novo").length;
+}
+
+function populateUf() {
+  const sel = document.getElementById("ufSelect");
+  const ufs = [...new Set(DATA.map(i => i.uf).filter(Boolean))].sort();
+  ufs.forEach(uf => {
+    const opt = document.createElement("option");
+    opt.value = uf;
+    opt.textContent = uf;
+    sel.appendChild(opt);
+  });
+}
+
+let state = { grupo: "todos", status: "todos", uf: "todos", q: "" };
+
+function applyFilters() {
+  return DATA.filter(i => {
+    if (state.grupo !== "todos" && String(i.grupo) !== state.grupo) return false;
+    if (state.status !== "todos" && i.status !== state.status) return false;
+    if (state.uf !== "todos" && i.uf !== state.uf) return false;
+    if (state.q) {
+      const hay = `${i.orgao} ${i.objeto} ${i.municipio} ${i.uf} ${i.modalidade}`.toLowerCase();
+      if (!hay.includes(state.q.toLowerCase())) return false;
+    }
+    return true;
+  }).sort((a, b) => {
+    const order = { urgente: 0, atencao: 1, novo: 2, normal: 3 };
+    const oa = order[a.status] ?? 4, ob = order[b.status] ?? 4;
+    if (oa !== ob) return oa - ob;
+    const da = a.dataEncerramentoProposta || "9999", db = b.dataEncerramentoProposta || "9999";
+    return da.localeCompare(db);
+  });
+}
+
+function renderTable() {
+  const items = applyFilters();
+  const tbody = document.getElementById("tableBody");
+  document.getElementById("resultCount").textContent =
+    DATA.length === 0
+      ? "nenhuma licitação relevante aberta no momento"
+      : `${items.length} de ${DATA.length} licitação${DATA.length === 1 ? "" : "s"} aberta${DATA.length === 1 ? "" : "s"} exibida${items.length === 1 ? "" : "s"}`;
+
+  if (items.length === 0) {
+    tbody.innerHTML = DATA.length === 0
+      ? `<tr class="empty-row"><td colspan="7">Nenhum edital relevante (projeto elétrico, SPDA, solar, subestação ou residencial) com prazo de proposta em aberto foi encontrado nesta varredura. O painel roda de novo em algumas horas.</td></tr>`
+      : `<tr class="empty-row"><td colspan="7">Nenhum edital aberto encontrado com esses filtros no momento.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = items.map(i => {
+    const dias = daysUntil(i.dataEncerramentoProposta);
+    const diasTxt = dias == null ? "" : dias <= 0 ? "encerra hoje" : `em ${dias} dia${dias === 1 ? "" : "s"}`;
+    const grupoCls = i.grupo === 2 ? "" : "g1";
+    const grupoTxt = i.grupo === 2 ? "Grupo 2 · projeto/execução" : "Grupo 1 · só projeto";
+    return `
+      <tr>
+        <td><span class="badge ${i.status}">${STATUS_LABEL[i.status] || i.status}</span></td>
+        <td class="orgao-cell">
+          <div class="orgao-nome">${escapeHtml(i.orgao || "—")}</div>
+          <div class="orgao-loc">${escapeHtml(i.municipio || "—")}${i.uf ? " / " + escapeHtml(i.uf) : ""}</div>
+        </td>
+        <td class="objeto-cell">
+          <span class="grupo-tag ${grupoCls}">${grupoTxt}</span>
+          <div class="objeto-txt">${escapeHtml(i.objeto)}</div>
+          ${i.exigeAtestado ? `<div class="atestado-flag">⚠ exige atestado fora do escopo</div>` : ""}
+          <div class="fonte-flag">${escapeHtml(i.fonte || "")}</div>
+        </td>
+        <td>${escapeHtml(i.modalidade || "—")}</td>
+        <td class="valor-cell">${fmtBRL(i.valorEstimado)}</td>
+        <td class="prazo-cell">${fmtDate(i.dataEncerramentoProposta)}<span class="prazo-dias">${diasTxt}</span></td>
+        <td>${i.link ? `<a href="${escapeHtml(i.link)}" target="_blank" rel="noopener">abrir ↗</a>` : "—"}</td>
+      </tr>`;
+  }).join("");
+}
+
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+document.getElementById("grupoChips").addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if (!btn) return;
+  [...e.currentTarget.children].forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  state.grupo = btn.dataset.grupo;
+  renderTable();
+});
+document.getElementById("statusChips").addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if (!btn) return;
+  [...e.currentTarget.children].forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  state.status = btn.dataset.status;
+  renderTable();
+});
+document.getElementById("ufSelect").addEventListener("change", (e) => {
+  state.uf = e.target.value;
+  renderTable();
+});
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  state.q = e.target.value;
+  renderTable();
+});
+
+function renderRunNote() {
+  const el = document.getElementById("runNote");
+  if (!RUN_NOTE || !RUN_NOTE.texto) { el.hidden = true; return; }
+  el.className = "run-note" + (RUN_NOTE.nivel === "ok" ? " ok" : RUN_NOTE.nivel === "crit" ? " crit" : "");
+  el.innerHTML = `<strong>${escapeHtml(RUN_NOTE.titulo || "")}</strong> ${escapeHtml(RUN_NOTE.texto)}`;
+  el.hidden = false;
+}
+
+renderMeta();
+renderRunNote();
+populateUf();
+renderStats(DATA);
+renderTable();
+</script>

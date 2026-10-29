@@ -1,0 +1,47 @@
+name: Radar Elétrico
+
+# Roda ~1h45 antes da tarefa agendada da Claude (08h e 18h de Brasília),
+# que só baixa o resultado daqui e publica no painel.
+# 09:17 e 19:17 UTC = 06h17 e 16h17 em Brasília.
+on:
+  schedule:
+    - cron: "17 9,19 * * *"
+  workflow_dispatch: {}   # botão "Run workflow" na aba Actions, para testar
+
+permissions:
+  contents: write
+
+concurrency:
+  group: radar
+  cancel-in-progress: false
+
+jobs:
+  varredura:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Testes
+        run: python -m unittest discover -s tests -v
+
+      - name: Varredura no PNCP
+        run: python radar.py --saida saida
+
+      - name: Publicar resultado no branch "dados"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd saida
+          git init -q -b dados
+          git config user.name "radar-eletrico[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Varredura $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" dados
+          echo "### Resultado" >> "$GITHUB_STEP_SUMMARY"
+          cat notificacao.txt >> "$GITHUB_STEP_SUMMARY"
