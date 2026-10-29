@@ -216,9 +216,14 @@ def sem_acento(txt: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFKD", txt) if not unicodedata.combining(c)).upper()
 
 
+def modelo_de(cnpj: str, n: int) -> int:
+    """Índice (0..n-1) do modelo de mensagem desta empresa — fixo pelo CNPJ."""
+    return int(hashlib.sha1(cnpj.encode()).hexdigest(), 16) % n
+
+
 def montar_mensagem(modelos: list[str], remetente: dict, empresa: str, cidade: str, cnpj: str,
                     atividade: str = "instalações elétricas") -> str:
-    i = int(hashlib.sha1(cnpj.encode()).hexdigest(), 16) % len(modelos)
+    i = modelo_de(cnpj, len(modelos))
     return modelos[i].format(nome=remetente["nome"], registro=remetente["registro"], empresa=empresa,
                              cidade=cidade, atividade=atividade)
 
@@ -353,6 +358,7 @@ def para_painel(e: dict, cfg: dict) -> dict:
         "celular": e["celular"],
         "email": e["email"],
         "mensagem": msg,
+        "modelo": modelo_de(e["cnpj"], len(cfg["mensagem"])) + 1,  # para medir qual texto responde melhor
     }
 
 

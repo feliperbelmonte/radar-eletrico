@@ -57,4 +57,5 @@ Só biblioteca padrão do Python 3.11+.
 | `leads.py` | Prospecção: baixa e filtra os dados abertos de CNPJ, gera o painel de empresas |
 | `prospeccao.toml` | Filtros e mensagens da prospecção |
 | `prospeccao/template.html` | Painel de prospecção; o bloco entre `LEADS_DATA_START/END` é reescrito a cada lista |
-| `.github/workflows/leads.yml` | Agendamento mensal, criptografia e publicação no branch `leads` |
+| `.github/workflows/leads.yml` | Agendamento semanal, criptografia e publicação no branch `leads` |
+| `skills/` | Skills do funil de prospecção, com as lições aprendidas de cada etapa |

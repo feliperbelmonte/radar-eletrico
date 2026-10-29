@@ -105,6 +105,7 @@ class TestPipeline(unittest.TestCase):
             self.assertIn("Carlos Instalacoes Eletricas", dados[1]["mensagem"])
             self.assertIn("instalações elétricas", dados[1]["mensagem"])
             self.assertIn("arquitetura", dados[2]["mensagem"])
+            self.assertTrue(all(1 <= l["modelo"] <= 3 for l in dados))
             resumo = json.loads((saida / "resumo.json").read_text(encoding="utf-8"))
             self.assertNotIn("41988880002", json.dumps(resumo))  # resumo sem contato
 

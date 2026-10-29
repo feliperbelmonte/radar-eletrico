@@ -116,6 +116,8 @@
   .badge { font-size: 0.72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-muted); }
   .badge.contatado { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; }
   .badge.respondeu { background: var(--wa-soft); color: var(--wa); border-color: transparent; }
+  .badge.qualificado { background: var(--wa-soft); color: var(--wa); border-color: var(--wa); }
+  .badge.proposta { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
   .badge.cliente { background: var(--wa); color: var(--wa-ink); border-color: transparent; }
   .badge.sem_interesse { background: var(--crit-soft); color: var(--crit); border-color: transparent; }
 
@@ -185,10 +187,13 @@ const RESUMO = null;
 /* LEADS_DATA_END */
 
 const META_DIA = 15;
+// Etapas do funil (as skills prospeccao-* usam os mesmos nomes)
 const STATUS = [
   ["a_contatar", "A contatar"],
   ["contatado", "Contatado"],
   ["respondeu", "Respondeu"],
+  ["qualificado", "Qualificado"],
+  ["proposta", "Proposta enviada"],
   ["cliente", "Cliente"],
   ["sem_interesse", "Sem interesse"],
 ];
@@ -207,7 +212,7 @@ const statusDe = (l) => (marcas[l.cnpj] && marcas[l.cnpj].status) || "a_contatar
 const hojeISO = () => new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
 
 function contar() {
-  const c = { a_contatar: 0, contatado: 0, respondeu: 0, cliente: 0, sem_interesse: 0 };
+  const c = Object.fromEntries(STATUS.map(([k]) => [k, 0]));
   let hoje = 0;
   for (const l of LEADS) c[statusDe(l)]++;
   for (const m of Object.values(marcas)) if (m.contatadoEm && m.contatadoEm.slice(0, 10) === hojeISO()) hoje++;
@@ -217,8 +222,8 @@ function contar() {
 function renderNumeros() {
   const { c, hoje } = contar();
   document.getElementById("sTotal").textContent = LEADS.length;
-  document.getElementById("sContatado").textContent = c.contatado + c.respondeu + c.cliente + c.sem_interesse;
-  document.getElementById("sRespondeu").textContent = c.respondeu + c.cliente;
+  document.getElementById("sContatado").textContent = LEADS.length - c.a_contatar;
+  document.getElementById("sRespondeu").textContent = c.respondeu + c.qualificado + c.proposta + c.cliente;
   document.getElementById("sCliente").textContent = c.cliente;
   document.getElementById("hojeN").textContent = `${hoje} / ${META_DIA}`;
   document.getElementById("hojeBarra").style.width = Math.min(100, (hoje / META_DIA) * 100) + "%";
@@ -288,7 +293,10 @@ function render() { renderNumeros(); renderLista(); }
 
 async function gravar(cnpj, mudanca) {
   const atual = marcas[cnpj] || {};
-  const novo = { ...atual, ...mudanca, quando: new Date().toISOString() };
+  const lead = LEADS.find((l) => l.cnpj === cnpj) || {};
+  // segmento, região e modelo de mensagem vão junto para a revisão do funil (o que responde melhor)
+  const contexto = { empresa: lead.empresa || "", segmento: lead.segmento || "", uf: lead.uf || "", cidade: lead.cidade || "", modelo: lead.modelo || 0 };
+  const novo = { ...contexto, ...atual, ...mudanca, quando: new Date().toISOString() };
   marcas = { ...marcas, [cnpj]: novo };
   render();
   if (!db) return;
