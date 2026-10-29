@@ -1,0 +1,70 @@
+name: Prospecção Elétrica
+
+# A Receita publica os dados abertos de CNPJ uma vez por mês.
+# Roda todo dia 20, 12:23 UTC (09h23 Brasília), e pelo botão "Run workflow".
+on:
+  schedule:
+    - cron: "23 12 20 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: leads
+  cancel-in-progress: false
+
+jobs:
+  empresas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Conferir a chave de criptografia
+        env:
+          LEADS_KEY: ${{ secrets.LEADS_KEY }}
+        run: |
+          if [ -z "$LEADS_KEY" ]; then
+            echo "::error::Falta o secret LEADS_KEY (Settings > Secrets and variables > Actions). A lista tem telefones e o repositório é público, então ela só é publicada criptografada."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Testes
+        run: python -m unittest discover -s tests -v
+
+      - name: Montar a lista de empresas
+        run: python leads.py --saida saida-leads
+
+      - name: Publicar (criptografado) no branch "leads"
+        env:
+          LEADS_KEY: ${{ secrets.LEADS_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd saida-leads
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -in painel.html -out painel.html.enc -pass env:LEADS_KEY
+          rm painel.html
+          {
+            echo "# Prospecção Elétrica — última atualização"
+            echo
+            echo "A lista de empresas fica em painel.html.enc (criptografada: contém telefones)."
+            echo "Contagens sem dados de contato:"
+            echo
+            echo '```json'
+            cat resumo.json
+            echo '```'
+          } > README.md
+          git init -q -b leads
+          git config user.name "radar-eletrico[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Lista de empresas $(date -u +%Y-%m-%d)"
+          git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" leads
+          echo "### Resumo" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat resumo.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

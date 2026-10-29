@@ -1,0 +1,364 @@
+<title>Prospecção Elétrica</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Libre+Franklin:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* Layout: cabeçalho com meta do dia, faixa de números, filtros fixos, lista de cartões (uma empresa por cartão, pensada para o celular) */
+  :root {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --border: #dbe0e8;
+    --text: #171b21;
+    --text-muted: #5a6270;
+    --text-faint: #8891a0;
+    --accent: #1f5fd6;
+    --accent-ink: #0f3f9e;
+    --accent-soft: #e7eefd;
+    --wa: #1a8f4c;
+    --wa-ink: #ffffff;
+    --wa-soft: #e3f4ea;
+    --warn: #a3660a;
+    --warn-soft: #faefda;
+    --crit: #c5321f;
+    --crit-soft: #fbe7e3;
+    --shadow: 0 1px 2px rgba(23, 27, 33, 0.04), 0 8px 24px -12px rgba(23, 27, 33, 0.14);
+    --radius: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116; --surface: #161a21; --surface-2: #1d222b; --border: #2a2f3a;
+      --text: #e9ecf1; --text-muted: #a4abb8; --text-faint: #6c7381;
+      --accent: #6d9dff; --accent-ink: #a9c4ff; --accent-soft: #182545;
+      --wa: #25a55c; --wa-ink: #ffffff; --wa-soft: #12301f;
+      --warn: #ffbf6b; --warn-soft: #362512; --crit: #ff8a75; --crit-soft: #3a1c19;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -14px rgba(0,0,0,.55);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1116; --surface: #161a21; --surface-2: #1d222b; --border: #2a2f3a;
+    --text: #e9ecf1; --text-muted: #a4abb8; --text-faint: #6c7381;
+    --accent: #6d9dff; --accent-ink: #a9c4ff; --accent-soft: #182545;
+    --wa: #25a55c; --wa-ink: #ffffff; --wa-soft: #12301f;
+    --warn: #ffbf6b; --warn-soft: #362512; --crit: #ff8a75; --crit-soft: #3a1c19;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -14px rgba(0,0,0,.55);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: "Libre Franklin", system-ui, -apple-system, sans-serif;
+    line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  button, select, input, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .wrap {
+    max-width: 920px; margin: 0 auto;
+    padding-block: 24px 64px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  header.top {
+    display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between;
+    padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--border);
+  }
+  h1 { font-family: "Archivo", system-ui, sans-serif; font-weight: 800; font-size: 1.5rem; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  .sub { color: var(--text-muted); font-size: 0.86rem; margin-top: 2px; max-width: 52ch; }
+  .meta-dia { text-align: right; font-size: 0.82rem; color: var(--text-muted); }
+  .meta-dia strong { font-family: "IBM Plex Mono", monospace; font-size: 1.35rem; color: var(--text); display: block; line-height: 1.1; }
+  .barra { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin-top: 6px; width: 160px; margin-left: auto; }
+  .barra > i { display: block; height: 100%; background: var(--wa); width: 0; transition: width .3s; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .stat .n { font-family: "IBM Plex Mono", monospace; font-size: 1.5rem; font-weight: 600; line-height: 1.1; }
+  .stat .l { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+  @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .meta-dia { text-align: left; } .barra { margin-left: 0; } }
+
+  .aviso { padding: 10px 14px; border-radius: var(--radius); font-size: 0.85rem; margin-bottom: 14px; border: 1px solid var(--border); background: var(--warn-soft); }
+
+  .filtros {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 10px 12px; margin-bottom: 12px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+  .filtros input[type="search"] { flex: 1 1 200px; min-width: 0; padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-2); }
+  .filtros select { padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-2); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { border: 1px solid var(--border); background: var(--surface-2); color: var(--text-muted); font-size: 0.8rem; padding: 6px 11px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+  .chip .c { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; opacity: .8; margin-left: 4px; }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .contagem { font-size: 0.8rem; color: var(--text-faint); margin: 0 0 10px 2px; }
+
+  .lista { display: grid; gap: 10px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; display: grid; gap: 10px; min-width: 0;
+  }
+  .card.feito { opacity: .72; }
+  .linha1 { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+  .nome { font-weight: 600; font-size: 1rem; }
+  .razao { color: var(--text-faint); font-size: 0.78rem; }
+  .local { color: var(--text-muted); font-size: 0.84rem; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.72rem; color: var(--text-muted); }
+  .tags span { background: var(--surface-2); padding: 2px 8px; border-radius: 5px; }
+  .contato { font-family: "IBM Plex Mono", monospace; font-size: 0.82rem; color: var(--text-muted); overflow-wrap: anywhere; }
+  .badge { font-size: 0.72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-muted); }
+  .badge.contatado { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; }
+  .badge.respondeu { background: var(--wa-soft); color: var(--wa); border-color: transparent; }
+  .badge.cliente { background: var(--wa); color: var(--wa-ink); border-color: transparent; }
+  .badge.sem_interesse { background: var(--crit-soft); color: var(--crit); border-color: transparent; }
+
+  details.msg { font-size: 0.85rem; }
+  details.msg summary { cursor: pointer; color: var(--text-muted); }
+  details.msg p { margin: 8px 0 0; padding: 10px 12px; background: var(--surface-2); border-radius: 8px; white-space: pre-wrap; }
+
+  .acoes { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn-wa {
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    background: var(--wa); color: var(--wa-ink); font-weight: 600; font-size: 0.88rem;
+    padding: 9px 14px; border-radius: 8px;
+  }
+  .btn-wa:hover { filter: brightness(1.05); }
+  .btn { border: 1px solid var(--border); background: var(--surface-2); padding: 8px 12px; border-radius: 8px; font-size: 0.84rem; cursor: pointer; }
+  .acoes select { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); font-size: 0.84rem; }
+  .nota { flex: 1 1 180px; min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); font-size: 0.84rem; }
+  .quando { font-size: 0.76rem; color: var(--text-faint); }
+
+  .mais { display: block; margin: 16px auto 0; }
+  .vazio { text-align: center; padding: 40px 16px; color: var(--text-muted); background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); }
+  footer { margin-top: 24px; font-size: 0.78rem; color: var(--text-faint); line-height: 1.6; max-width: 70ch; }
+  @media (prefers-reduced-motion: reduce) { .barra > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Prospecção Elétrica</h1>
+      <div class="sub">Empresas de instalação elétrica que podem terceirizar projeto. Abra o WhatsApp, revise a mensagem e envie.</div>
+    </div>
+    <div class="meta-dia">
+      contatos hoje
+      <strong id="hojeN">0 / 15</strong>
+      <div class="barra"><i id="hojeBarra"></i></div>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="sTotal">0</div><div class="l">Na lista</div></div>
+    <div class="stat"><div class="n" id="sContatado">0</div><div class="l">Contatadas</div></div>
+    <div class="stat"><div class="n" id="sRespondeu">0</div><div class="l">Responderam</div></div>
+    <div class="stat"><div class="n" id="sCliente">0</div><div class="l">Clientes</div></div>
+  </div>
+
+  <div class="aviso" id="aviso" hidden></div>
+
+  <div class="filtros">
+    <input type="search" id="busca" placeholder="Buscar empresa, cidade ou telefone…" aria-label="Buscar">
+    <select id="uf" aria-label="Estado"><option value="">Todas as UF</option></select>
+    <div class="chips" id="chips"></div>
+  </div>
+  <p class="contagem" id="contagem"></p>
+
+  <div class="lista" id="lista"></div>
+  <button class="btn mais" id="mais" hidden>Mostrar mais 30</button>
+
+  <footer id="rodape"></footer>
+</div>
+
+<script>
+/* LEADS_DATA_START */
+// Bloco reescrito pelo leads.py a cada atualização — não editar à mão.
+const LEADS = [];
+const RESUMO = null;
+/* LEADS_DATA_END */
+
+const META_DIA = 15;
+const STATUS = [
+  ["a_contatar", "A contatar"],
+  ["contatado", "Contatado"],
+  ["respondeu", "Respondeu"],
+  ["cliente", "Cliente"],
+  ["sem_interesse", "Sem interesse"],
+];
+const ROTULO = Object.fromEntries(STATUS);
+const estado = { filtro: "a_contatar", uf: "", q: "", limite: 30 };
+let marcas = {};      // cnpj -> {status, quando, nota}
+let db = null;
+const lerFiltro = () => { try { return JSON.parse(localStorage.getItem("prosp-filtros") || "{}"); } catch { return {}; } };
+const salvarFiltro = () => { try { localStorage.setItem("prosp-filtros", JSON.stringify({ filtro: estado.filtro, uf: estado.uf })); } catch {} };
+Object.assign(estado, lerFiltro());
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fone = (n) => n.length === 11 ? `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}` : n;
+const statusDe = (l) => (marcas[l.cnpj] && marcas[l.cnpj].status) || "a_contatar";
+const hojeISO = () => new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+
+function contar() {
+  const c = { a_contatar: 0, contatado: 0, respondeu: 0, cliente: 0, sem_interesse: 0 };
+  let hoje = 0;
+  for (const l of LEADS) c[statusDe(l)]++;
+  for (const m of Object.values(marcas)) if (m.contatadoEm && m.contatadoEm.slice(0, 10) === hojeISO()) hoje++;
+  return { c, hoje };
+}
+
+function renderNumeros() {
+  const { c, hoje } = contar();
+  document.getElementById("sTotal").textContent = LEADS.length;
+  document.getElementById("sContatado").textContent = c.contatado + c.respondeu + c.cliente + c.sem_interesse;
+  document.getElementById("sRespondeu").textContent = c.respondeu + c.cliente;
+  document.getElementById("sCliente").textContent = c.cliente;
+  document.getElementById("hojeN").textContent = `${hoje} / ${META_DIA}`;
+  document.getElementById("hojeBarra").style.width = Math.min(100, (hoje / META_DIA) * 100) + "%";
+  document.getElementById("chips").innerHTML = STATUS.map(([k, r]) =>
+    `<button class="chip${estado.filtro === k ? " on" : ""}" data-f="${k}">${r}<span class="c">${c[k]}</span></button>`).join("")
+    + `<button class="chip${estado.filtro === "" ? " on" : ""}" data-f="">Todas</button>`;
+}
+
+function filtrados() {
+  const q = estado.q.trim().toLowerCase();
+  const qd = q.replace(/\D/g, "");
+  return LEADS.filter((l) => {
+    if (estado.filtro && statusDe(l) !== estado.filtro) return false;
+    if (estado.uf && l.uf !== estado.uf) return false;
+    if (q) {
+      const hay = `${l.empresa} ${l.razao} ${l.cidade} ${l.bairro} ${l.uf}`.toLowerCase();
+      if (!hay.includes(q) && !(qd.length >= 4 && l.celular.includes(qd))) return false;
+    }
+    return true;
+  });
+}
+
+function cartao(l) {
+  const m = marcas[l.cnpj] || {};
+  const st = statusDe(l);
+  const quando = m.quando ? new Date(m.quando).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+  return `<article class="card${st !== "a_contatar" ? " feito" : ""}" data-cnpj="${esc(l.cnpj)}">
+    <div class="linha1">
+      <div style="min-width:0">
+        <div class="nome">${esc(l.empresa)}</div>
+        <div class="razao">${esc(l.razao)}</div>
+        <div class="local">${esc(l.cidade)} / ${esc(l.uf)}${l.bairro ? " · " + esc(l.bairro) : ""}</div>
+      </div>
+      <span class="badge ${st}">${ROTULO[st]}</span>
+    </div>
+    <div class="tags"><span>${esc(l.porte)}</span>${l.desde ? `<span>desde ${esc(l.desde)}</span>` : ""}</div>
+    <div class="contato">${esc(fone(l.celular))}${l.email ? " · " + esc(l.email) : ""}</div>
+    <details class="msg"><summary>Ver mensagem</summary><p>${esc(l.mensagem)}</p></details>
+    <div class="acoes">
+      <a class="btn-wa" href="${esc(l.whatsapp)}" target="_blank" rel="noopener" data-acao="wa">Abrir no WhatsApp</a>
+      <button class="btn" data-acao="copiar">Copiar mensagem</button>
+      <select data-acao="status" aria-label="Status">${STATUS.map(([k, r]) => `<option value="${k}"${k === st ? " selected" : ""}>${r}</option>`).join("")}</select>
+      <input class="nota" data-acao="nota" placeholder="Anotação (ex.: retornar semana que vem)" value="${esc(m.nota || "")}" ${db ? "" : "disabled"}>
+    </div>
+    ${quando ? `<div class="quando">Atualizado em ${quando}</div>` : ""}
+  </article>`;
+}
+
+function renderLista() {
+  const itens = filtrados();
+  const lista = document.getElementById("lista");
+  document.getElementById("contagem").textContent =
+    `${itens.length} empresa${itens.length === 1 ? "" : "s"}${estado.filtro ? " · " + ROTULO[estado.filtro].toLowerCase() : ""}`;
+  if (!LEADS.length) {
+    lista.innerHTML = `<div class="vazio">Nenhuma empresa carregada ainda. A lista vem do robô no GitHub (dados abertos de CNPJ da Receita) e é atualizada uma vez por mês.</div>`;
+  } else if (!itens.length) {
+    lista.innerHTML = `<div class="vazio">Nada aqui com esses filtros.</div>`;
+  } else {
+    lista.innerHTML = itens.slice(0, estado.limite).map(cartao).join("");
+  }
+  const mais = document.getElementById("mais");
+  mais.hidden = itens.length <= estado.limite;
+}
+
+function render() { renderNumeros(); renderLista(); }
+
+async function gravar(cnpj, mudanca) {
+  const atual = marcas[cnpj] || {};
+  const novo = { ...atual, ...mudanca, quando: new Date().toISOString() };
+  marcas = { ...marcas, [cnpj]: novo };
+  render();
+  if (!db) return;
+  try { await db.doc("status/" + cnpj).set(novo); }
+  catch (e) { mostrarAviso("Não consegui salvar agora (" + (e && e.code || "erro") + "). A mudança aparece só nesta tela."); }
+}
+
+function mostrarAviso(txt) {
+  const el = document.getElementById("aviso");
+  el.textContent = txt; el.hidden = false;
+}
+
+document.getElementById("chips").addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  estado.filtro = b.dataset.f; estado.limite = 30; salvarFiltro(); render();
+});
+document.getElementById("uf").addEventListener("change", (e) => { estado.uf = e.target.value; estado.limite = 30; salvarFiltro(); renderLista(); });
+let tBusca;
+document.getElementById("busca").addEventListener("input", (e) => {
+  clearTimeout(tBusca); tBusca = setTimeout(() => { estado.q = e.target.value; estado.limite = 30; renderLista(); }, 150);
+});
+document.getElementById("mais").addEventListener("click", () => { estado.limite += 30; renderLista(); });
+
+const lista = document.getElementById("lista");
+lista.addEventListener("click", async (e) => {
+  const alvo = e.target.closest("[data-acao]"); if (!alvo) return;
+  const cnpj = alvo.closest(".card").dataset.cnpj;
+  const lead = LEADS.find((l) => l.cnpj === cnpj);
+  if (alvo.dataset.acao === "wa" && statusDe(lead) === "a_contatar") {
+    gravar(cnpj, { status: "contatado", contatadoEm: new Date().toISOString() });
+  }
+  if (alvo.dataset.acao === "copiar") {
+    try { await navigator.clipboard.writeText(lead.mensagem); alvo.textContent = "Copiada"; }
+    catch { const d = alvo.closest(".card").querySelector("details"); d.open = true; alvo.textContent = "Selecione o texto"; }
+    setTimeout(() => { alvo.textContent = "Copiar mensagem"; }, 1800);
+  }
+});
+lista.addEventListener("change", (e) => {
+  const alvo = e.target.closest("[data-acao]"); if (!alvo) return;
+  const cnpj = alvo.closest(".card").dataset.cnpj;
+  if (alvo.dataset.acao === "status") {
+    const extra = alvo.value !== "a_contatar" && !(marcas[cnpj] || {}).contatadoEm ? { contatadoEm: new Date().toISOString() } : {};
+    gravar(cnpj, { status: alvo.value, ...extra });
+  }
+  if (alvo.dataset.acao === "nota") gravar(cnpj, { nota: alvo.value.slice(0, 500) });
+});
+
+function iniciar() {
+  const ufs = [...new Set(LEADS.map((l) => l.uf))];
+  const sel = document.getElementById("uf");
+  for (const uf of ufs) { const o = document.createElement("option"); o.value = uf; o.textContent = uf; sel.appendChild(o); }
+  sel.value = ufs.includes(estado.uf) ? estado.uf : "";
+  estado.uf = sel.value;
+  if (RESUMO) {
+    const quando = new Date(RESUMO.geradoEm).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+    document.getElementById("rodape").textContent =
+      `Lista de ${quando}: ${RESUMO.totalAprovadas} empresas no país passaram nos filtros (CNAE de instalação elétrica, ativas, micro ou pequeno porte, com celular); ` +
+      `as ${RESUMO.noPainel} mais prioritárias estão aqui, começando pelo Paraná. Fonte: dados abertos de CNPJ da Receita Federal. ` +
+      `Quem pedir para não receber mais mensagens: marque "Sem interesse".`;
+  }
+  render();
+}
+iniciar();
+
+(async () => {
+  db = await (window.claude?.use ? window.claude.use("db") : null);
+  if (!db) { mostrarAviso("O status das empresas não será salvo nesta visualização. Abra o painel pelo claude.ai para salvar o andamento."); return; }
+  db.collection("status").onSnapshot((snap) => {
+    const novo = {};
+    for (const d of snap.docs) novo[d.id] = d.data();
+    marcas = novo;
+    render();
+  }, (err) => mostrarAviso("Parei de receber atualizações de status (" + err.code + "). Recarregue a página."));
+  renderLista();
+})();
+</script>

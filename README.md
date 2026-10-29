@@ -1,6 +1,18 @@
 # Radar Elétrico
 
-Robô que varre a API oficial do PNCP (Portal Nacional de Contratações Públicas) duas vezes por dia, filtra as licitações com proposta aberta que interessam a um engenheiro eletricista (projeto elétrico, SPDA, NR-10, solar até 75 kWp, subestação até 1 MVA, instalações residenciais) e gera um painel pronto para publicar.
+Dois robôs para um engenheiro eletricista que presta serviço de projeto:
+
+1. **Radar de licitações** (`radar.py`, 2x por dia): varre a API oficial do PNCP e filtra licitações com proposta aberta (projeto elétrico, SPDA, NR-10, solar até 75 kWp, subestação até 1 MVA, instalações residenciais).
+2. **Prospecção de empresas** (`leads.py`, 1x por mês): lista empresas de instalação elétrica (dados abertos de CNPJ da Receita Federal) que podem terceirizar projeto, com uma mensagem curta pronta e um botão para abrir o WhatsApp. O envio é sempre manual, uma empresa de cada vez.
+
+## Prospecção de empresas
+
+- Filtros em [`prospeccao.toml`](./prospeccao.toml): CNAE (padrão 4321-5/00), porte, MEI, anos de atividade, UFs, prioridade por UF/cidade, quantidade no painel e os modelos de mensagem.
+- O workflow `leads.yml` roda todo dia 20 (a Receita atualiza a base uma vez por mês) e publica no branch `leads` o painel **criptografado** (`painel.html.enc`), porque a lista tem telefones e este repositório é público. A chave fica no secret `LEADS_KEY`.
+- O painel (Claude Artifact) guarda o andamento de cada empresa (contatado, respondeu, cliente, sem interesse) e mostra a meta de contatos do dia.
+- Quem pedir para não receber mais mensagens deve ser marcado como "Sem interesse".
+
+## Radar de licitações
 
 ## Como funciona
 
@@ -42,3 +54,7 @@ Só biblioteca padrão do Python 3.11+.
 | `prompt-tarefa-agendada.md` | Prompt da tarefa agendada da Claude (publica e notifica) |
 | `tests/` | Testes offline e dados de exemplo no formato da API |
 | `docs/prompt-v1-claude-sozinho.md` | Versão anterior, em que a Claude fazia a busca sozinha |
+| `leads.py` | Prospecção: baixa e filtra os dados abertos de CNPJ, gera o painel de empresas |
+| `prospeccao.toml` | Filtros e mensagens da prospecção |
+| `prospeccao/template.html` | Painel de prospecção; o bloco entre `LEADS_DATA_START/END` é reescrito a cada lista |
+| `.github/workflows/leads.yml` | Agendamento mensal, criptografia e publicação no branch `leads` |

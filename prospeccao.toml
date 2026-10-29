@@ -1,0 +1,50 @@
+# Prospecção de empresas — o que o leads.py procura nos dados abertos de CNPJ da Receita.
+# Para mudar o público-alvo, edite este arquivo (não precisa mexer no código).
+
+[fonte]
+# Pastas mensais (AAAA-MM) com os zips da Receita. Tenta na ordem; o espelho é reserva.
+bases = [
+  "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/",
+  "https://dados-abertos-rf-cnpj.casadosdados.com.br/arquivos/",
+]
+partes = 10              # Estabelecimentos0..9.zip e Empresas0..9.zip
+timeout_segundos = 120
+tentativas = 4
+
+[filtro]
+# CNAE principal (7 dígitos, sem pontuação). 4321500 = instalação e manutenção elétrica
+# (cobre a maioria das integradoras solares e das empresas de elétrica).
+cnaes_principais = ["4321500"]
+# Opcional: aceitar também quem tem estes CNAEs como secundários.
+cnaes_secundarios = []
+# Porte da empresa: "01" = microempresa, "03" = empresa de pequeno porte, "05" = demais.
+portes = ["01", "03"]
+incluir_mei = false        # MEI normalmente é o eletricista sozinho, sem demanda de projeto
+anos_minimos_atividade = 1
+# Vazio = Brasil inteiro. Ex.: ["PR", "SC", "RS"]
+ufs = []
+
+[prioridade]
+# Ordem de atendimento: estas UFs primeiro, nesta ordem; depois o resto do país.
+ufs = ["PR", "SC", "RS", "SP", "MS", "MG", "RJ", "GO", "DF", "MT", "ES"]
+# Cidades que sobem para o topo dentro da UF (nome sem acento, maiúsculas, como na Receita).
+cidades = []
+
+[saida]
+max_empresas = 2000      # quantas entram no painel (as mais prioritárias)
+painel_titulo = "Prospecção Elétrica"
+
+[remetente]
+nome = "Felipe"
+registro = "CREA-PR"
+
+# Modelos de mensagem. Cada empresa recebe sempre o mesmo modelo (sorteado pelo CNPJ),
+# para variar o texto entre contatos. Campos: {nome} {registro} {empresa} {cidade}.
+[[mensagem]]
+texto = "Oi, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Vi que a {empresa} trabalha com instalações elétricas em {cidade}. Faço só a parte de projeto (projeto elétrico, SPDA, laudos, projeto de energia solar e ART), à distância, para empresas que querem terceirizar isso quando a demanda aperta. Vocês costumam precisar de projeto em algum serviço? Se não fizer sentido, é só me avisar que não mando mais."
+
+[[mensagem]]
+texto = "Olá! Meu nome é {nome}, sou engenheiro eletricista ({registro}). Encontrei a {empresa} pesquisando empresas de instalações elétricas em {cidade}. Trabalho só com projeto: projeto elétrico, SPDA, laudo, projeto solar e ART, sem concorrer na execução. Se em algum momento vocês precisarem terceirizar projeto, posso ajudar. Faz sentido conversarmos? Se não, me avisa que não incomodo mais."
+
+[[mensagem]]
+texto = "Oi, tudo certo? Sou o {nome}, engenheiro eletricista ({registro}). Vi a {empresa} em {cidade} e queria me apresentar: faço projetos elétricos, laudos e ART para empresas de instalação que precisam de um engenheiro nessa parte, sem custo fixo, cobrando por projeto. Hoje vocês têm alguém que faz isso ou costumam terceirizar? Se não for o caso, é só me falar."
