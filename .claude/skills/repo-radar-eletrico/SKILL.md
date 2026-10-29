@@ -60,6 +60,7 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 
 ## Histórico
 
+- 2026-10-29: 1ª rodada real do radar: API respondeu nas 5 modalidades (~25 mil contratações, ~55 min), 105 relevantes. Falsos positivos vinham de citações de passagem na informação complementar: escopo, exclusões e compra/serviço agora olham só o `objetoCompra`; novas exclusões (vigilância, seguro, poda, ar-condicionado, cursos...). Tarefa agendada da Claude passou para o prompt v2.
 - 2026-10-29: repositório criado, documentando a v1 (Claude buscando sozinha).
 - 2026-10-29: prospecção de empresas (leads.py, prospeccao.toml, painel com status em db, workflow mensal criptografado). Felipe quer renda extra fazendo só projeto (sem execução) para empresas de instalação elétrica.
 - 2026-10-29: busca movida para GitHub Actions (`radar.py` + `config.toml` + workflow + template do painel); prompt da Claude v2 só publica e notifica. Felipe avisou que o foco da busca vai mudar em breve: fazer isso no `config.toml`.

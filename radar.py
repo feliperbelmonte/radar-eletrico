@@ -179,15 +179,19 @@ def classificar(item: dict, regras: Regras, agora: datetime) -> tuple[dict | Non
         return None, "prazo_vencido"
 
     objeto = (item.get("objetoCompra") or "").strip()
+    # Escopo, exclusões e compra/serviço olham só o OBJETO: a informação complementar
+    # costuma citar de passagem coisas que não são o serviço (ex.: vigilância de uma usina).
+    texto_objeto = normalizar(objeto)
     texto = normalizar(f"{objeto} {item.get('informacaoComplementar') or ''}")
 
-    if casa(regras.excluir, texto):
+    if casa(regras.excluir, texto_objeto):
         return None, "termo_excluido"
-    if casa(regras.compra, texto) and not casa(regras.servico, texto):
+    if casa(regras.compra, texto_objeto) and not casa(regras.servico, texto_objeto):
         return None, "compra_de_material"
 
     escopo = next((e for e in regras.escopos
-                   if casa(e.termos, texto) and (e.exige_tambem is None or casa(e.exige_tambem, texto))),
+                   if casa(e.termos, texto_objeto)
+                   and (e.exige_tambem is None or casa(e.exige_tambem, texto_objeto))),
                   None)
     if escopo is None:
         return None, "fora_do_escopo"

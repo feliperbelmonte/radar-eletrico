@@ -34,6 +34,11 @@ excluir = [
   "creditos de energia", "compensacao de credito*", "cessao de credito*",
   "cabeamento estruturado", "rede logica", "rede de dados",
   "aquisicao de materia*", "compra de materia*", "aquisicao de equipamento*",
+  "aquisicoes de*", "aquisicoes parceladas*",
+  # serviços que só citam elétrica/solar de passagem (vistos na 1ª rodada real)
+  "vigilancia*", "seguro*", "seguradora", "poda*", "rocada*", "limpeza de faixa",
+  "decoracao natalina", "decoracoes natalinas", "ar condicionado", "ares condicionados",
+  "servicos educacionais", "treinamento*", "capacitacao", "curso*", "recomposicao do muro",
 ]
 # Compra pura de material (sem serviço) é descartada: se aparecer um termo de "compra"
 # e NENHUM termo de "servico", o item sai.
