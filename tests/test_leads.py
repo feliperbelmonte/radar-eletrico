@@ -59,6 +59,7 @@ class TestPipeline(unittest.TestCase):
                 estab("44444444", "BAIXADA", "4321500", "PR", "7535", "41", "977770004", situacao="08"),  # baixada
                 estab("55555555", "NOVINHA", "4321500", "PR", "7535", "41", "966660005", inicio="20260901"),
                 estab("66666666", "PADARIA", "1091102", "PR", "7535", "41", "955550006"),  # outro CNAE
+                estab("99999999", "TRACO ARQ", "7111100", "PR", "7535", "41", "911110010"),  # arquitetura
                 estab("77777777", "MEI ELETRICA", "4321500", "PR", "7535", "41", "944440007"),
                 estab("88888888", "GRANDE SA", "4321500", "PR", "7535", "41", "933330008"),
                 estab("22222222", "FILIAL", "4321500", "PR", "7535", "41", "922220009", matriz="2"),
@@ -71,6 +72,7 @@ class TestPipeline(unittest.TestCase):
                 ["55555555", "NOVINHA LTDA", "2062", "49", "1,00", "01", ""],
                 ["77777777", "77.777.777 JOSE ELETRICISTA", "2135", "50", "1,00", "01", ""],
                 ["88888888", "GRANDE SA", "2054", "10", "9000000,00", "05", ""],
+                ["99999999", "TRACO ARQUITETURA LTDA", "2062", "49", "1,00", "01", ""],
             ])
             escrever_zip(d, "Simples.zip", [["77777777", "S", "20200101", "", "S", "20200101", ""]])
             escrever_zip(d, "Municipios.zip", [["7535", "CURITIBA"], ["8179", "JOINVILLE"]])
@@ -81,16 +83,18 @@ class TestPipeline(unittest.TestCase):
             saida = d / "saida"
             res = leads.executar(saida, cfg_path, d, HOJE)
 
-            self.assertEqual(res["totalAprovadas"], 2)
-            self.assertEqual(res["porUf"], {"PR": 1, "SC": 1})
+            self.assertEqual(res["totalAprovadas"], 4)  # inclui a grande (porte 05) e a arquitetura
+            self.assertEqual(res["porUf"], {"PR": 3, "SC": 1})
             painel = (saida / "painel.html").read_text(encoding="utf-8")
             ini = painel.index("const LEADS = ") + len("const LEADS = ")
             dados = json.loads(painel[ini:painel.index(";\nconst RESUMO")])
-            self.assertEqual([l["empresa"] for l in dados], ["Carlos Instalacoes Eletricas", "Luz Forte"])
-            self.assertEqual(dados[0]["cidade"], "Curitiba")
-            self.assertEqual(dados[0]["celular"], "41988880002")  # matriz, não a filial
-            self.assertTrue(dados[0]["whatsapp"].startswith("https://wa.me/5541988880002?text="))
-            self.assertIn("Carlos Instalacoes Eletricas", dados[0]["mensagem"])
+            self.assertEqual([l["empresa"] for l in dados], ["Grande", "Carlos Instalacoes Eletricas", "Traco Arq", "Luz Forte"])
+            self.assertEqual(dados[1]["segmento"], "Instalação elétrica")
+            self.assertEqual(dados[1]["cidade"], "Curitiba")
+            self.assertEqual(dados[1]["celular"], "41988880002")  # matriz, não a filial
+            self.assertIn("Carlos Instalacoes Eletricas", dados[1]["mensagem"])
+            self.assertIn("instalações elétricas", dados[1]["mensagem"])
+            self.assertIn("arquitetura", dados[2]["mensagem"])
             resumo = json.loads((saida / "resumo.json").read_text(encoding="utf-8"))
             self.assertNotIn("41988880002", json.dumps(resumo))  # resumo sem contato
 

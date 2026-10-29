@@ -145,7 +145,7 @@
   <header class="top">
     <div>
       <h1>Prospecção Elétrica</h1>
-      <div class="sub">Empresas de instalação elétrica que podem terceirizar projeto. Abra o WhatsApp, revise a mensagem e envie.</div>
+      <div class="sub">Empresas que podem terceirizar projeto elétrico: instaladoras, construtoras, arquitetura, engenharia e indústria. Abra o WhatsApp, revise a mensagem e envie.</div>
     </div>
     <div class="meta-dia">
       contatos hoje
@@ -166,6 +166,7 @@
   <div class="filtros">
     <input type="search" id="busca" placeholder="Buscar empresa, cidade ou telefone…" aria-label="Buscar">
     <select id="uf" aria-label="Estado"><option value="">Todas as UF</option></select>
+    <select id="seg" aria-label="Segmento"><option value="">Todos os segmentos</option></select>
     <div class="chips" id="chips"></div>
   </div>
   <p class="contagem" id="contagem"></p>
@@ -192,14 +193,15 @@ const STATUS = [
   ["sem_interesse", "Sem interesse"],
 ];
 const ROTULO = Object.fromEntries(STATUS);
-const estado = { filtro: "a_contatar", uf: "", q: "", limite: 30 };
+const estado = { filtro: "a_contatar", uf: "", seg: "", q: "", limite: 30 };
 let marcas = {};      // cnpj -> {status, quando, nota}
 let db = null;
 const lerFiltro = () => { try { return JSON.parse(localStorage.getItem("prosp-filtros") || "{}"); } catch { return {}; } };
-const salvarFiltro = () => { try { localStorage.setItem("prosp-filtros", JSON.stringify({ filtro: estado.filtro, uf: estado.uf })); } catch {} };
+const salvarFiltro = () => { try { localStorage.setItem("prosp-filtros", JSON.stringify({ filtro: estado.filtro, uf: estado.uf, seg: estado.seg })); } catch {} };
 Object.assign(estado, lerFiltro());
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const linkWa = (l) => `https://wa.me/55${l.celular}?text=${encodeURIComponent(l.mensagem)}`;
 const fone = (n) => n.length === 11 ? `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}` : n;
 const statusDe = (l) => (marcas[l.cnpj] && marcas[l.cnpj].status) || "a_contatar";
 const hojeISO = () => new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
@@ -231,8 +233,9 @@ function filtrados() {
   return LEADS.filter((l) => {
     if (estado.filtro && statusDe(l) !== estado.filtro) return false;
     if (estado.uf && l.uf !== estado.uf) return false;
+    if (estado.seg && l.segmento !== estado.seg) return false;
     if (q) {
-      const hay = `${l.empresa} ${l.razao} ${l.cidade} ${l.bairro} ${l.uf}`.toLowerCase();
+      const hay = `${l.empresa} ${l.razao} ${l.cidade} ${l.bairro} ${l.uf} ${l.segmento}`.toLowerCase();
       if (!hay.includes(q) && !(qd.length >= 4 && l.celular.includes(qd))) return false;
     }
     return true;
@@ -252,11 +255,11 @@ function cartao(l) {
       </div>
       <span class="badge ${st}">${ROTULO[st]}</span>
     </div>
-    <div class="tags"><span>${esc(l.porte)}</span>${l.desde ? `<span>desde ${esc(l.desde)}</span>` : ""}</div>
+    <div class="tags"><span>${esc(l.segmento)}</span><span>${esc(l.porte)}</span>${l.desde ? `<span>desde ${esc(l.desde)}</span>` : ""}</div>
     <div class="contato">${esc(fone(l.celular))}${l.email ? " · " + esc(l.email) : ""}</div>
     <details class="msg"><summary>Ver mensagem</summary><p>${esc(l.mensagem)}</p></details>
     <div class="acoes">
-      <a class="btn-wa" href="${esc(l.whatsapp)}" target="_blank" rel="noopener" data-acao="wa">Abrir no WhatsApp</a>
+      <a class="btn-wa" href="${esc(linkWa(l))}" target="_blank" rel="noopener" data-acao="wa">Abrir no WhatsApp</a>
       <button class="btn" data-acao="copiar">Copiar mensagem</button>
       <select data-acao="status" aria-label="Status">${STATUS.map(([k, r]) => `<option value="${k}"${k === st ? " selected" : ""}>${r}</option>`).join("")}</select>
       <input class="nota" data-acao="nota" placeholder="Anotação (ex.: retornar semana que vem)" value="${esc(m.nota || "")}" ${db ? "" : "disabled"}>
@@ -303,6 +306,7 @@ document.getElementById("chips").addEventListener("click", (e) => {
   estado.filtro = b.dataset.f; estado.limite = 30; salvarFiltro(); render();
 });
 document.getElementById("uf").addEventListener("change", (e) => { estado.uf = e.target.value; estado.limite = 30; salvarFiltro(); renderLista(); });
+document.getElementById("seg").addEventListener("change", (e) => { estado.seg = e.target.value; estado.limite = 30; salvarFiltro(); renderLista(); });
 let tBusca;
 document.getElementById("busca").addEventListener("input", (e) => {
   clearTimeout(tBusca); tBusca = setTimeout(() => { estado.q = e.target.value; estado.limite = 30; renderLista(); }, 150);
@@ -339,10 +343,15 @@ function iniciar() {
   for (const uf of ufs) { const o = document.createElement("option"); o.value = uf; o.textContent = uf; sel.appendChild(o); }
   sel.value = ufs.includes(estado.uf) ? estado.uf : "";
   estado.uf = sel.value;
+  const segs = [...new Set(LEADS.map((l) => l.segmento))];
+  const selS = document.getElementById("seg");
+  for (const sg of segs) { const o = document.createElement("option"); o.value = sg; o.textContent = sg; selS.appendChild(o); }
+  selS.value = segs.includes(estado.seg) ? estado.seg : "";
+  estado.seg = selS.value;
   if (RESUMO) {
     const quando = new Date(RESUMO.geradoEm).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
     document.getElementById("rodape").textContent =
-      `Lista de ${quando}: ${RESUMO.totalAprovadas} empresas no país passaram nos filtros (CNAE de instalação elétrica, ativas, micro ou pequeno porte, com celular); ` +
+      `Lista de ${quando}: ${RESUMO.totalAprovadas} empresas no país passaram nos filtros (segmentos que contratam projeto elétrico, ativas, com celular, sem MEI); ` +
       `as ${RESUMO.noPainel} mais prioritárias estão aqui, começando pelo Paraná. Fonte: dados abertos de CNPJ da Receita Federal. ` +
       `Quem pedir para não receber mais mensagens: marque "Sem interesse".`;
   }

@@ -12,17 +12,67 @@ timeout_segundos = 120
 tentativas = 4
 
 [filtro]
-# CNAE principal (7 dígitos, sem pontuação). 4321500 = instalação e manutenção elétrica
-# (cobre a maioria das integradoras solares e das empresas de elétrica).
-cnaes_principais = ["4321500"]
-# Opcional: aceitar também quem tem estes CNAEs como secundários.
-cnaes_secundarios = []
-# Porte da empresa: "01" = microempresa, "03" = empresa de pequeno porte, "05" = demais.
-portes = ["01", "03"]
-incluir_mei = false        # MEI normalmente é o eletricista sozinho, sem demanda de projeto
+# Porte: "00" = não informado, "01" = microempresa, "03" = pequeno porte, "05" = demais (médias e grandes).
+portes = ["00", "01", "03", "05"]
+incluir_mei = false        # MEI normalmente é um profissional sozinho, sem demanda de projeto
 anos_minimos_atividade = 1
+# Aceitar também quem tem o CNAE do segmento só como atividade secundária.
+usar_cnae_secundario = false
 # Vazio = Brasil inteiro. Ex.: ["PR", "SC", "RS"]
 ufs = []
+
+# ---------------------------------------------------------------------------
+# Segmentos: quem costuma precisar de projeto elétrico. A ordem é a prioridade
+# dentro de cada UF. "atividade" entra na mensagem ("trabalha com {atividade}").
+# Para tirar um segmento, apague o bloco; para incluir, copie um bloco e troque os CNAEs.
+# ---------------------------------------------------------------------------
+[[segmento]]
+id = "eletrica"
+rotulo = "Instalação elétrica"
+atividade = "instalações elétricas"
+cnaes = ["4321500"]
+
+[[segmento]]
+id = "arquitetura"
+rotulo = "Arquitetura"
+atividade = "projetos de arquitetura"
+cnaes = ["7111100"]
+
+[[segmento]]
+id = "construcao"
+rotulo = "Construtora"
+atividade = "construção"
+cnaes = ["4120400"]
+
+[[segmento]]
+id = "engenharia"
+rotulo = "Engenharia"
+atividade = "engenharia"
+cnaes = ["7112000"]
+
+[[segmento]]
+id = "industrial"
+rotulo = "Montagem industrial"
+atividade = "montagem e instalação industrial"
+cnaes = ["3321000", "4292802"]
+
+[[segmento]]
+id = "redes"
+rotulo = "Redes de energia"
+atividade = "redes de energia elétrica"
+cnaes = ["4221902", "4221903"]
+
+[[segmento]]
+id = "iluminacao"
+rotulo = "Iluminação e sinalização"
+atividade = "iluminação e sinalização"
+cnaes = ["4329104"]
+
+[[segmento]]
+id = "climatizacao"
+rotulo = "Climatização"
+atividade = "climatização e refrigeração"
+cnaes = ["4322302"]
 
 [prioridade]
 # Ordem de atendimento: estas UFs primeiro, nesta ordem; depois o resto do país.
@@ -31,7 +81,7 @@ ufs = ["PR", "SC", "RS", "SP", "MS", "MG", "RJ", "GO", "DF", "MT", "ES"]
 cidades = []
 
 [saida]
-max_empresas = 2000      # quantas entram no painel (as mais prioritárias)
+max_empresas = 3000      # quantas entram no painel (as mais prioritárias)
 painel_titulo = "Prospecção Elétrica"
 
 [remetente]
@@ -39,12 +89,12 @@ nome = "Felipe"
 registro = "CREA-PR"
 
 # Modelos de mensagem. Cada empresa recebe sempre o mesmo modelo (sorteado pelo CNPJ),
-# para variar o texto entre contatos. Campos: {nome} {registro} {empresa} {cidade}.
+# para variar o texto entre contatos. Campos: {nome} {registro} {empresa} {cidade} {atividade}.
 [[mensagem]]
-texto = "Oi, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Vi que a {empresa} trabalha com instalações elétricas em {cidade}. Faço só a parte de projeto (projeto elétrico, SPDA, laudos, projeto de energia solar e ART), à distância, para empresas que querem terceirizar isso quando a demanda aperta. Vocês costumam precisar de projeto em algum serviço? Se não fizer sentido, é só me avisar que não mando mais."
+texto = "Oi, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Vi que a {empresa} trabalha com {atividade} em {cidade}. Faço só a parte de projeto elétrico (residencial, comercial e industrial, SPDA, laudos, subestação e ART), à distância, para empresas que preferem terceirizar isso ou precisam de reforço quando a demanda aperta. Vocês costumam precisar de projeto elétrico em algum serviço? Se não fizer sentido, é só me avisar que não mando mais."
 
 [[mensagem]]
-texto = "Olá! Meu nome é {nome}, sou engenheiro eletricista ({registro}). Encontrei a {empresa} pesquisando empresas de instalações elétricas em {cidade}. Trabalho só com projeto: projeto elétrico, SPDA, laudo, projeto solar e ART, sem concorrer na execução. Se em algum momento vocês precisarem terceirizar projeto, posso ajudar. Faz sentido conversarmos? Se não, me avisa que não incomodo mais."
+texto = "Olá! Meu nome é {nome}, sou engenheiro eletricista ({registro}). Encontrei a {empresa} pesquisando empresas de {atividade} em {cidade}. Trabalho só com projeto elétrico (de residência a indústria, SPDA, laudos e ART), sem concorrer na execução. Se em algum momento vocês precisarem terceirizar projeto, posso ajudar. Faz sentido conversarmos? Se não, me avisa que não incomodo mais."
 
 [[mensagem]]
-texto = "Oi, tudo certo? Sou o {nome}, engenheiro eletricista ({registro}). Vi a {empresa} em {cidade} e queria me apresentar: faço projetos elétricos, laudos e ART para empresas de instalação que precisam de um engenheiro nessa parte, sem custo fixo, cobrando por projeto. Hoje vocês têm alguém que faz isso ou costumam terceirizar? Se não for o caso, é só me falar."
+texto = "Oi, tudo certo? Sou o {nome}, engenheiro eletricista ({registro}). Vi a {empresa} em {cidade} e queria me apresentar: faço projetos elétricos, laudos e ART para empresas que precisam de um engenheiro eletricista nessa parte, sem custo fixo, cobrando por projeto. Hoje vocês têm alguém que faz isso ou costumam terceirizar? Se não for o caso, é só me falar."

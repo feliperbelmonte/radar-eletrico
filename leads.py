@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prospecção Elétrica — lista empresas de instalação elétrica a partir dos dados abertos de CNPJ.
+"""Prospecção Elétrica — lista empresas que precisam de projeto elétrico, a partir dos dados abertos de CNPJ.
 
 Uso:
     python leads.py --saida saida-leads              # baixa os zips da Receita
@@ -164,19 +164,21 @@ def sem_acento(txt: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFKD", txt) if not unicodedata.combining(c)).upper()
 
 
-def montar_mensagem(modelos: list[str], remetente: dict, empresa: str, cidade: str, cnpj: str) -> str:
+def montar_mensagem(modelos: list[str], remetente: dict, empresa: str, cidade: str, cnpj: str,
+                    atividade: str = "instalações elétricas") -> str:
     i = int(hashlib.sha1(cnpj.encode()).hexdigest(), 16) % len(modelos)
-    return modelos[i].format(nome=remetente["nome"], registro=remetente["registro"], empresa=empresa, cidade=cidade)
+    return modelos[i].format(nome=remetente["nome"], registro=remetente["registro"], empresa=empresa,
+                             cidade=cidade, atividade=atividade)
 
 
 # ---------------------------------------------------------------- pipeline
 
 def coletar(fonte: Fonte, cfg: dict, hoje: date) -> tuple[list[dict], dict]:
     f, cfgf = cfg["filtro"], cfg["fonte"]
-    cnaes = set(f["cnaes_principais"])
-    cnaes_sec = set(f.get("cnaes_secundarios", []))
+    segmento_de = {c: i for i, seg in enumerate(cfg["segmento"]) for c in seg["cnaes"]}
+    usar_sec = f.get("usar_cnae_secundario", False)
     ufs = set(f.get("ufs") or [])
-    marcadores = [c.encode() for c in cnaes | cnaes_sec]
+    marcadores = [c.encode() for c in segmento_de]
     limite_inicio = (hoje - timedelta(days=365 * f["anos_minimos_atividade"])).strftime("%Y%m%d")
     stats = {"estabelecimentos_lidos": 0, "cnae_ativos": 0, "sem_celular": 0, "muito_novos": 0}
 
@@ -191,9 +193,17 @@ def coletar(fonte: Fonte, cfg: dict, hoje: date) -> tuple[list[dict], dict]:
             c = campos(linha)
             if len(c) < 28 or c[E_SITUACAO] != "02":
                 continue
-            principal = c[E_CNAE] in cnaes
-            secundario = bool(cnaes_sec & set(c[E_CNAE_SEC].split(",")))
-            if not (principal or secundario) or (ufs and c[E_UF] not in ufs):
+            principal = c[E_CNAE] in segmento_de
+            if principal:
+                seg = segmento_de[c[E_CNAE]]
+            elif usar_sec:
+                secs = [segmento_de[x] for x in c[E_CNAE_SEC].split(",") if x in segmento_de]
+                if not secs:
+                    continue
+                seg = min(secs)
+            else:
+                continue
+            if ufs and c[E_UF] not in ufs:
                 continue
             stats["cnae_ativos"] += 1
             if c[E_INICIO] and c[E_INICIO] > limite_inicio:
@@ -210,7 +220,7 @@ def coletar(fonte: Fonte, cfg: dict, hoje: date) -> tuple[list[dict], dict]:
             candidatos[basico] = {
                 "cnpj": basico + c[E_ORDEM] + c[E_DV], "matriz": c[E_MATRIZ], "fantasia": c[E_FANTASIA],
                 "inicio": c[E_INICIO], "uf": c[E_UF], "mun": c[E_MUN], "bairro": c[E_BAIRRO].strip(),
-                "celular": cel, "email": c[E_EMAIL].strip().lower(), "cnae_principal": principal,
+                "celular": cel, "email": c[E_EMAIL].strip().lower(), "cnae_principal": principal, "segmento": seg,
             }
         fonte.liberar(caminho)
         log(f"{nome}: {len(candidatos)} empresas candidatas até agora")
@@ -266,7 +276,8 @@ def priorizar(empresas: list[dict], cfg: dict) -> list[dict]:
         uf_rank = ufs.index(e["uf"]) if e["uf"] in ufs else len(ufs)
         cid = sem_acento(e["cidade"])
         cid_rank = cidades.index(cid) if cid in cidades else len(cidades)
-        return (uf_rank, cid_rank, not e["cnae_principal"], e.get("porte") != "03", not e["email"], e["inicio"])
+        porte_rank = {"05": 0, "03": 1, "01": 2}.get(e.get("porte"), 3)  # maiores primeiro: mais demanda
+        return (uf_rank, cid_rank, e["segmento"], not e["cnae_principal"], porte_rank, not e["email"], e["inicio"])
 
     return sorted(empresas, key=chave)
 
@@ -274,7 +285,9 @@ def priorizar(empresas: list[dict], cfg: dict) -> list[dict]:
 def para_painel(e: dict, cfg: dict) -> dict:
     empresa = nome_empresa(e.get("fantasia", ""), e.get("razao", ""))
     cidade = titulo(e["cidade"])
-    msg = montar_mensagem([m["texto"] for m in cfg["mensagem"]], cfg["remetente"], empresa, cidade, e["cnpj"])
+    seg = cfg["segmento"][e["segmento"]]
+    msg = montar_mensagem([m["texto"] for m in cfg["mensagem"]], cfg["remetente"], empresa, cidade, e["cnpj"],
+                          seg["atividade"])
     return {
         "cnpj": e["cnpj"],
         "empresa": empresa,
@@ -282,12 +295,12 @@ def para_painel(e: dict, cfg: dict) -> dict:
         "cidade": cidade,
         "uf": e["uf"],
         "bairro": titulo(e["bairro"]),
+        "segmento": seg["rotulo"],
         "porte": PORTES.get(e.get("porte", ""), "—"),
         "desde": e["inicio"][:4] if e["inicio"] else "",
         "celular": e["celular"],
         "email": e["email"],
         "mensagem": msg,
-        "whatsapp": f"https://wa.me/55{e['celular']}?text={urllib.parse.quote(msg)}",
     }
 
 
@@ -311,14 +324,18 @@ def executar(saida: Path, config: Path, local: Path | None, hoje: date | None = 
     empresas = priorizar(empresas, cfg)
     selecionadas = empresas[: cfg["saida"]["max_empresas"]]
     por_uf: dict[str, int] = {}
+    por_segmento: dict[str, int] = {}
     for e in empresas:
         por_uf[e["uf"]] = por_uf.get(e["uf"], 0) + 1
+        rot = cfg["segmento"][e["segmento"]]["rotulo"]
+        por_segmento[rot] = por_segmento.get(rot, 0) + 1
     resumo = {
         "geradoEm": datetime.now(BRT).isoformat(timespec="seconds"),
         "fonte": fonte.pasta or "local",
         "totalAprovadas": len(empresas),
         "noPainel": len(selecionadas),
         "porUf": dict(sorted(por_uf.items(), key=lambda kv: -kv[1])),
+        "porSegmento": dict(sorted(por_segmento.items(), key=lambda kv: -kv[1])),
         "etapas": stats,
     }
     saida.mkdir(parents=True, exist_ok=True)
