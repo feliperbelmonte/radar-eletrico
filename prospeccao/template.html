@@ -352,7 +352,7 @@ function iniciar() {
     const quando = new Date(RESUMO.geradoEm).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
     document.getElementById("rodape").textContent =
       `Lista de ${quando}: ${RESUMO.totalAprovadas} empresas no país passaram nos filtros (segmentos que contratam projeto elétrico, ativas, com celular, sem MEI); ` +
-      `as ${RESUMO.noPainel} mais prioritárias estão aqui, começando pela região de Jaraguá do Sul. Fonte: dados abertos de CNPJ da Receita Federal. ` +
+      `as ${RESUMO.noPainel} mais prioritárias estão aqui, começando pelo Paraná (região de Curitiba e litoral primeiro). Fonte: dados abertos de CNPJ da Receita Federal. ` +
       `Quem pedir para não receber mais mensagens: marque "Sem interesse".`;
   }
   render();
