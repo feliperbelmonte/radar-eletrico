@@ -1,0 +1,13 @@
+Varredura de 29/10, 09h39: 105 editais relevantes abertos (26 só projeto · 79 projeto/execução — solar, subestação ou residencial). 41 com prazo em até 7 dias.
+
+Destaques:
+1. CAMARA MUNICIPAL DE GLORIA (Glória/BA) — [Solar até 75kWp] Prestação de serviços de instalação de usina / sistema de geração de energia solar fotovoltaica HÍBRIDO, compreendendo a elaboração e… — R$ 62.383 — prazo 29/10 13h00 — https://pncp.gov.br/app/editais/13452669000166/2026/5
+2. ESTADO DO CEARA (Fortaleza/CE) — [Subestação até 1MVA] MANUTENÇÃO DA SUBESTAÇÃO DE 300KVA. OBS: LER O TERMO REFERENCIAL E DEMAIS DOCUMENTOS. — R$ 100.601 — prazo 29/10 14h00 — https://pncp.gov.br/app/editais/07954480000179/2026/26672
+3. CAMARA MUNICIPAL DE ABAETE (Abaeté/MG) — [Solar até 75kWp] [Portal de Compras Públicas] - Contratação de empresa especializada para fornecimento de solução completa para implantação de sistema de… — R$ 57.350 — prazo 29/10 18h00 — https://pncp.gov.br/app/editais/20922217000166/2026/16
+4. COMANDO DA MARINHA (Belém/PA) — [Solar até 75kWp] O item encontra-se pormenorizado a seguir, admitindo-se modelos de referência ou de qualidade/desempenho equivalente ou superior:
+1: Arranjo… — R$ 49.000 — prazo 03/11 08h00 — https://pncp.gov.br/app/editais/00394502000144/2026/14555
+5. COMANDO DA MARINHA (Belém/PA) — [Solar até 75kWp] Os acumuladores elétricos deverão atender rigorosamente aos padrões internacionais de
+segurança e desempenho:
+- Item 1: Bateria Solar de… — R$ 30.324 — prazo 03/11 08h00 — https://pncp.gov.br/app/editais/00394502000144/2026/14565
+
+Painel: https://claude.ai/code/artifact/3acf32e4-7a26-420c-927e-b638ded6802f
