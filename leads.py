@@ -15,6 +15,7 @@ Só biblioteca padrão do Python (3.11+).
 from __future__ import annotations
 
 import argparse
+import base64
 import csv
 import hashlib
 import io
@@ -25,6 +26,7 @@ import tempfile
 import time
 import tomllib
 import unicodedata
+import xml.etree.ElementTree as ET
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -57,13 +59,27 @@ def log(msg: str) -> None:
 
 
 # ---------------------------------------------------------------- download
+# A Receita publica os dados num compartilhamento público do Nextcloud
+# (https://arquivos.receitafederal.gov.br/index.php/s/<token>), acessado por WebDAV
+# com o token como usuário. O token muda de tempos em tempos: fica no prospeccao.toml.
 
-def baixar(url: str, destino: Path, cfg: dict) -> None:
+def _auth(token: str) -> str:
+    return "Basic " + base64.b64encode(f"{token}:".encode()).decode()
+
+
+def _abrir(url: str, cfg: dict, metodo: str = "GET", auth: str | None = None, extra: dict | None = None):
+    cab = {"User-Agent": UA, **(extra or {})}
+    if auth:
+        cab["Authorization"] = auth
+    req = urllib.request.Request(url, method=metodo, headers=cab)
+    return urllib.request.urlopen(req, timeout=cfg["timeout_segundos"])
+
+
+def baixar(url: str, destino: Path, cfg: dict, auth: str | None = None) -> None:
     ultimo = "erro desconhecido"
     for tentativa in range(cfg["tentativas"]):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA})
-            with urllib.request.urlopen(req, timeout=cfg["timeout_segundos"]) as r, open(destino, "wb") as f:
+            with _abrir(url, cfg, auth=auth) as r, open(destino, "wb") as f:
                 while bloco := r.read(1 << 20):
                     f.write(bloco)
             return
@@ -74,27 +90,63 @@ def baixar(url: str, destino: Path, cfg: dict) -> None:
     raise RuntimeError(f"não consegui baixar {url}: {ultimo}")
 
 
-def listar(url: str, cfg: dict) -> str:
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=cfg["timeout_segundos"]) as r:
+def ler_multistatus(xml: str) -> list[tuple[str, bool]]:
+    """Resposta de PROPFIND → [(nome, é_pasta)], sem a própria pasta consultada."""
+    ns = {"d": "DAV:"}
+    itens = []
+    for resp in ET.fromstring(xml).findall("d:response", ns):
+        href = resp.findtext("d:href", default="", namespaces=ns)
+        nome = urllib.parse.unquote(href.rstrip("/")).rsplit("/", 1)[-1]
+        pasta = resp.find(".//d:resourcetype/d:collection", ns) is not None
+        if nome:
+            itens.append((nome, pasta))
+    return itens[1:] if itens else itens  # o primeiro é a pasta consultada
+
+
+def propfind(url: str, token: str, cfg: dict) -> list[tuple[str, bool]]:
+    with _abrir(url, cfg, "PROPFIND", _auth(token), {"Depth": "1"}) as r:
+        return ler_multistatus(r.read().decode("utf-8", "replace"))
+
+
+def listar_html(url: str, cfg: dict) -> str:
+    with _abrir(url, cfg) as r:
         return r.read().decode("utf-8", "replace")
 
 
-def achar_pasta_mais_recente(cfg: dict) -> str:
-    """Devolve a URL da pasta AAAA-MM mais recente que tenha os zips."""
+def achar_pasta_mais_recente(cfg: dict) -> tuple[str, str | None]:
+    """(URL da pasta AAAA-MM mais recente com os zips, cabeçalho de autenticação ou None)."""
     erros = []
-    for base in cfg["bases"]:
+    servidor = cfg["servidor"].rstrip("/")
+    for comp in cfg.get("compartilhamentos", []):
+        token, raiz = comp["token"], comp.get("raiz", "").strip("/")
+        raiz = raiz + "/" if raiz else ""
+        for base in (f"{servidor}/public.php/dav/files/{token}/{raiz}", f"{servidor}/public.php/webdav/{raiz}"):
+            try:
+                meses = sorted((n for n, pasta in propfind(base, token, cfg) if pasta and re.fullmatch(r"\d{4}-\d{2}", n)),
+                               reverse=True)
+                for mes in meses[:3]:
+                    nomes = {n for n, _ in propfind(base + mes + "/", token, cfg)}
+                    if "Estabelecimentos0.zip" in nomes:
+                        log(f"Usando {base}{mes}/ (compartilhamento {token})")
+                        return base + mes + "/", _auth(token)
+                erros.append(f"{base}: nenhuma pasta mensal completa ({', '.join(meses[:3]) or 'sem meses'})")
+            except Exception as e:  # noqa: BLE001 — tenta o próximo caminho
+                erros.append(f"{base}: {type(e).__name__}: {e}")
+    for base in cfg.get("espelhos", []):
         try:
-            meses = sorted(set(re.findall(r'href="(?:[^"]*/)?(\d{4}-\d{2})/?"', listar(base, cfg))), reverse=True)
+            meses = sorted(set(re.findall(r'href="(?:[^"]*/)?(\d{4}-\d{2})/?"', listar_html(base, cfg))), reverse=True)
             for mes in meses[:3]:
                 pasta = urllib.parse.urljoin(base, mes + "/")
-                if "Estabelecimentos0.zip" in listar(pasta, cfg):
-                    log(f"Usando {pasta}")
-                    return pasta
+                if "Estabelecimentos0.zip" in listar_html(pasta, cfg):
+                    log(f"Usando espelho {pasta}")
+                    return pasta, None
             erros.append(f"{base}: nenhuma pasta mensal com Estabelecimentos0.zip")
-        except Exception as e:  # noqa: BLE001 — tenta a próxima base
+        except Exception as e:  # noqa: BLE001
             erros.append(f"{base}: {type(e).__name__}: {e}")
-    raise RuntimeError("dados de CNPJ não encontrados: " + " | ".join(erros))
+    raise RuntimeError(
+        "dados de CNPJ não encontrados. Se a Receita trocou o link, pegue o token novo em "
+        "https://arquivos.receitafederal.gov.br (Dados > Cadastros > CNPJ: a URL fica .../index.php/s/<token>) "
+        "e atualize [fonte].compartilhamentos no prospeccao.toml. Tentativas: " + " | ".join(erros))
 
 
 class Fonte:
@@ -102,7 +154,7 @@ class Fonte:
 
     def __init__(self, cfg: dict, local: Path | None):
         self.cfg, self.local = cfg, local
-        self.pasta = None if local else achar_pasta_mais_recente(cfg)
+        self.pasta, self.auth = (None, None) if local else achar_pasta_mais_recente(cfg)
         self.tmp = Path(tempfile.mkdtemp(prefix="cnpj-"))
 
     def abrir(self, nome: str) -> Path:
@@ -110,7 +162,7 @@ class Fonte:
             return self.local / nome
         destino = self.tmp / nome
         t0 = time.time()
-        baixar(self.pasta + nome, destino, self.cfg)
+        baixar(self.pasta + nome, destino, self.cfg, self.auth)
         log(f"  {nome}: {destino.stat().st_size / 1e6:.0f} MB em {time.time() - t0:.0f}s")
         return destino
 

@@ -2,11 +2,17 @@
 # Para mudar o público-alvo, edite este arquivo (não precisa mexer no código).
 
 [fonte]
-# Pastas mensais (AAAA-MM) com os zips da Receita. Tenta na ordem; o espelho é reserva.
-bases = [
-  "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/",
-  "https://dados-abertos-rf-cnpj.casadosdados.com.br/arquivos/",
+# A Receita publica a base num compartilhamento público (Nextcloud) acessado por WebDAV.
+# O token é o código no fim do link https://arquivos.receitafederal.gov.br/index.php/s/<token>
+# e muda de vez em quando: se a coleta falhar com "dados de CNPJ não encontrados", abra
+# arquivos.receitafederal.gov.br > Dados > Cadastros > CNPJ, copie o token novo e ponha aqui.
+servidor = "https://arquivos.receitafederal.gov.br"
+compartilhamentos = [
+  { token = "YggdBLfdninEJX9", raiz = "" },
+  { token = "gn672Ad4CF8N6TK", raiz = "Dados/Cadastros/CNPJ" },
 ]
+# Reserva: espelhos com listagem HTML simples (pastas AAAA-MM).
+espelhos = ["https://dados-abertos-rf-cnpj.casadosdados.com.br/arquivos/"]
 partes = 10              # Estabelecimentos0..9.zip e Empresas0..9.zip
 timeout_segundos = 120
 tentativas = 4

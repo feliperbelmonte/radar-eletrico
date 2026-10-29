@@ -48,6 +48,16 @@ class TestRegras(unittest.TestCase):
         self.assertEqual(leads.montar_mensagem(modelos, r, "X", "Y", "123"), leads.montar_mensagem(modelos, r, "X", "Y", "123"))
 
 
+class TestWebdav(unittest.TestCase):
+    def test_ler_multistatus(self):
+        xml = """<?xml version="1.0"?><d:multistatus xmlns:d="DAV:">
+          <d:response><d:href>/public.php/dav/files/TOK/</d:href><d:propstat><d:prop><d:resourcetype><d:collection/></d:resourcetype></d:prop></d:propstat></d:response>
+          <d:response><d:href>/public.php/dav/files/TOK/2026-09/</d:href><d:propstat><d:prop><d:resourcetype><d:collection/></d:resourcetype></d:prop></d:propstat></d:response>
+          <d:response><d:href>/public.php/dav/files/TOK/2026-09/Estabelecimentos0.zip</d:href><d:propstat><d:prop><d:resourcetype/></d:prop></d:propstat></d:response>
+        </d:multistatus>"""
+        self.assertEqual(leads.ler_multistatus(xml), [("2026-09", True), ("Estabelecimentos0.zip", False)])
+
+
 class TestPipeline(unittest.TestCase):
     def test_ponta_a_ponta(self):
         with tempfile.TemporaryDirectory() as tmp:

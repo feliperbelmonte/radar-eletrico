@@ -30,7 +30,7 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 ## Prospecção de empresas (leads)
 
 - `leads.py` + `prospeccao.toml` + `prospeccao/template.html` + `.github/workflows/leads.yml` (todo dia 20, 12:23 UTC, e manual).
-- Fonte: dados abertos de CNPJ da Receita (`Estabelecimentos0-9.zip`, `Empresas0-9.zip`, `Simples.zip`, `Municipios.zip`, pasta mensal `AAAA-MM`; bases em `[fonte].bases`, o espelho casadosdados é reserva). Nem a Receita nem o espelho são acessíveis do ambiente da Claude, só do Actions.
+- Fonte: dados abertos de CNPJ da Receita (`Estabelecimentos0-9.zip`, `Empresas0-9.zip`, `Simples.zip`, `Municipios.zip`, pasta mensal `AAAA-MM`). Desde 2025 ficam num compartilhamento Nextcloud: WebDAV em `https://arquivos.receitafederal.gov.br/public.php/dav/files/<token>/` (PROPFIND com Basic auth `<token>:`). O caminho antigo `/dados/cnpj/dados_abertos_cnpj/` dá 404. Tokens em `[fonte].compartilhamentos` (mudam de tempos em tempos); espelho casadosdados é reserva. Nem a Receita nem o espelho são acessíveis do ambiente da Claude, só do Actions.
 - Filtro padrão: segmentos `[[segmento]]` (instalação elétrica 4321500, arquitetura 7111100, construtora 4120400, engenharia 7112000, montagem industrial 3321000/4292802, redes 4221902/4221903, iluminação 4329104, climatização 4322302), situação ativa (02), todos os portes (Felipe pediu para incluir empresas maiores), sem MEI, ≥1 ano, com celular (9 dígitos começando com 9, ou 8 dígitos 6-9 sem o nono dígito). Um contato por CNPJ básico, preferindo a matriz. Ordem: UFs de `[prioridade]` (PR primeiro), cidades prioritárias, ordem dos segmentos, CNAE principal, porte maior primeiro, com e-mail, mais antigas.
 - Mensagem: um de 3 modelos em `[[mensagem]]` (serviço = projeto elétrico em geral, não só solar), escolhido pelo hash do CNPJ, com `{atividade}` do segmento; o painel monta o link `https://wa.me/55<ddd><cel>?text=...`. **Envio sempre manual** (decisão do Felipe, 29/10/2026): nada de disparo automático (risco de banimento do número, LGPD).
 - Repo público + telefones: o workflow criptografa `painel.html` → `painel.html.enc` (`openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt`, senha no secret `LEADS_KEY`) e publica no branch `leads` com `resumo.json` (só contagens). Para abrir: `openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in painel.html.enc -out painel.html -pass env:LEADS_KEY`.
@@ -60,6 +60,7 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 
 ## Histórico
 
+- 2026-10-29: 1ª rodada da prospecção falhou (404 no caminho antigo da Receita); download passou para o WebDAV do compartilhamento Nextcloud.
 - 2026-10-29: 1ª rodada real do radar: API respondeu nas 5 modalidades (~25 mil contratações, ~55 min), 105 relevantes. Falsos positivos vinham de citações de passagem na informação complementar: escopo, exclusões e compra/serviço agora olham só o `objetoCompra`; novas exclusões (vigilância, seguro, poda, ar-condicionado, cursos...). Tarefa agendada da Claude passou para o prompt v2.
 - 2026-10-29: repositório criado, documentando a v1 (Claude buscando sozinha).
 - 2026-10-29: prospecção de empresas (leads.py, prospeccao.toml, painel com status em db, workflow mensal criptografado). Felipe quer renda extra fazendo só projeto (sem execução) para empresas de instalação elétrica.
