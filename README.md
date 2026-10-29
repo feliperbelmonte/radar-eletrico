@@ -7,6 +7,8 @@ Dois robôs para um engenheiro eletricista que presta serviço de projeto:
 
 ## Prospecção de empresas
 
+- Plano de automação do contato (WhatsApp/e-mail) e checklist: [`docs/automacao-whatsapp.md`](./docs/automacao-whatsapp.md).
+
 - Filtros em [`prospeccao.toml`](./prospeccao.toml): CNAE (padrão 4321-5/00), porte, MEI, anos de atividade, UFs, prioridade por UF/cidade, quantidade no painel e os modelos de mensagem.
 - O workflow `leads.yml` roda todo dia 20 (a Receita atualiza a base uma vez por mês) e publica no branch `leads` o painel **criptografado** (`painel.html.enc`), porque a lista tem telefones e este repositório é público. A chave fica no secret `LEADS_KEY`.
 - O painel (Claude Artifact) guarda o andamento de cada empresa (contatado, respondeu, cliente, sem interesse) e mostra a meta de contatos do dia.
