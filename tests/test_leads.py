@@ -98,13 +98,13 @@ class TestPipeline(unittest.TestCase):
             painel = (saida / "painel.html").read_text(encoding="utf-8")
             ini = painel.index("const LEADS = ") + len("const LEADS = ")
             dados = json.loads(painel[ini:painel.index(";\nconst RESUMO")])
-            self.assertEqual([l["empresa"] for l in dados], ["Grande", "Carlos Instalacoes Eletricas", "Traco Arq", "Luz Forte"])
-            self.assertEqual(dados[1]["segmento"], "Instalação elétrica")
-            self.assertEqual(dados[1]["cidade"], "Curitiba")
-            self.assertEqual(dados[1]["celular"], "41988880002")  # matriz, não a filial
-            self.assertIn("Carlos Instalacoes Eletricas", dados[1]["mensagem"])
-            self.assertIn("instalações elétricas", dados[1]["mensagem"])
-            self.assertIn("arquitetura", dados[2]["mensagem"])
+            self.assertEqual([l["empresa"] for l in dados], ["Luz Forte", "Grande", "Carlos Instalacoes Eletricas", "Traco Arq"])
+            self.assertEqual(dados[2]["segmento"], "Instalação elétrica")
+            self.assertEqual(dados[2]["cidade"], "Curitiba")
+            self.assertEqual(dados[2]["celular"], "41988880002")  # matriz, não a filial
+            self.assertIn("Carlos Instalacoes Eletricas", dados[2]["mensagem"])
+            self.assertIn("instalações elétricas", dados[2]["mensagem"])
+            self.assertIn("arquitetura", dados[3]["mensagem"])
             resumo = json.loads((saida / "resumo.json").read_text(encoding="utf-8"))
             self.assertNotIn("41988880002", json.dumps(resumo))  # resumo sem contato
 

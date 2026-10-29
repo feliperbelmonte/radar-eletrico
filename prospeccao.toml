@@ -81,10 +81,17 @@ atividade = "climatização e refrigeração"
 cnaes = ["4322302"]
 
 [prioridade]
-# Ordem de atendimento: estas UFs primeiro, nesta ordem; depois o resto do país.
-ufs = ["PR", "SC", "RS", "SP", "MS", "MG", "RJ", "GO", "DF", "MT", "ES"]
-# Cidades que sobem para o topo dentro da UF (nome sem acento, maiúsculas, como na Receita).
-cidades = []
+# Primeiro as cidades da lista (na ordem), depois as UFs (na ordem), depois o resto do país.
+# Cidade no formato "NOME/UF", como na Receita (sem acento, maiúsculas). Felipe mora em
+# Jaraguá do Sul/SC (CREA-PR): região de Jaraguá e norte de SC primeiro.
+cidades = [
+  "JARAGUA DO SUL/SC", "GUARAMIRIM/SC", "SCHROEDER/SC", "CORUPA/SC", "MASSARANDUBA/SC",
+  "POMERODE/SC", "JOINVILLE/SC", "SAO BENTO DO SUL/SC", "BLUMENAU/SC", "GASPAR/SC",
+  "INDAIAL/SC", "TIMBO/SC", "BARRA VELHA/SC", "ARAQUARI/SC", "SAO FRANCISCO DO SUL/SC",
+  "RIO NEGRINHO/SC", "ITAJAI/SC", "BALNEARIO CAMBORIU/SC", "BRUSQUE/SC",
+  "CURITIBA/PR", "SAO JOSE DOS PINHAIS/PR",
+]
+ufs = ["SC", "PR", "RS", "SP", "MS", "MG", "RJ", "GO", "DF", "MT", "ES"]
 
 [saida]
 max_empresas = 3000      # quantas entram no painel (as mais prioritárias)

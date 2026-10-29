@@ -274,7 +274,7 @@ function renderLista() {
   document.getElementById("contagem").textContent =
     `${itens.length} empresa${itens.length === 1 ? "" : "s"}${estado.filtro ? " · " + ROTULO[estado.filtro].toLowerCase() : ""}`;
   if (!LEADS.length) {
-    lista.innerHTML = `<div class="vazio">Nenhuma empresa carregada ainda. A lista vem do robô no GitHub (dados abertos de CNPJ da Receita) e é atualizada uma vez por mês.</div>`;
+    lista.innerHTML = `<div class="vazio">Nenhuma empresa carregada ainda. A lista vem do robô no GitHub (dados abertos de CNPJ da Receita) e é conferida toda semana (a Receita atualiza a base uma vez por mês).</div>`;
   } else if (!itens.length) {
     lista.innerHTML = `<div class="vazio">Nada aqui com esses filtros.</div>`;
   } else {
@@ -352,7 +352,7 @@ function iniciar() {
     const quando = new Date(RESUMO.geradoEm).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
     document.getElementById("rodape").textContent =
       `Lista de ${quando}: ${RESUMO.totalAprovadas} empresas no país passaram nos filtros (segmentos que contratam projeto elétrico, ativas, com celular, sem MEI); ` +
-      `as ${RESUMO.noPainel} mais prioritárias estão aqui, começando pelo Paraná. Fonte: dados abertos de CNPJ da Receita Federal. ` +
+      `as ${RESUMO.noPainel} mais prioritárias estão aqui, começando pela região de Jaraguá do Sul. Fonte: dados abertos de CNPJ da Receita Federal. ` +
       `Quem pedir para não receber mais mensagens: marque "Sem interesse".`;
   }
   render();

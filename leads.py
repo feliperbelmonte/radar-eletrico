@@ -322,14 +322,14 @@ def coletar(fonte: Fonte, cfg: dict, hoje: date) -> tuple[list[dict], dict]:
 
 def priorizar(empresas: list[dict], cfg: dict) -> list[dict]:
     ufs = cfg["prioridade"]["ufs"]
-    cidades = [sem_acento(c) for c in cfg["prioridade"].get("cidades", [])]
+    cidades = [sem_acento(c).replace(" / ", "/") for c in cfg["prioridade"].get("cidades", [])]
 
     def chave(e):
-        uf_rank = ufs.index(e["uf"]) if e["uf"] in ufs else len(ufs)
-        cid = sem_acento(e["cidade"])
+        cid = f"{sem_acento(e['cidade'])}/{e['uf']}"
         cid_rank = cidades.index(cid) if cid in cidades else len(cidades)
+        uf_rank = ufs.index(e["uf"]) if e["uf"] in ufs else len(ufs)
         porte_rank = {"05": 0, "03": 1, "01": 2}.get(e.get("porte"), 3)  # maiores primeiro: mais demanda
-        return (uf_rank, cid_rank, e["segmento"], not e["cnae_principal"], porte_rank, not e["email"], e["inicio"])
+        return (cid_rank, uf_rank, e["segmento"], not e["cnae_principal"], porte_rank, not e["email"], e["inicio"])
 
     return sorted(empresas, key=chave)
 
