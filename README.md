@@ -1,0 +1,60 @@
+# Prospecção Elétrica — última atualização
+
+A lista de empresas fica em painel.html.enc (criptografada: contém telefones).
+Contagens sem dados de contato:
+
+```json
+{
+  "geradoEm": "2026-10-29T14:05:21-03:00",
+  "fonte": "https://arquivos.receitafederal.gov.br/public.php/dav/files/YggdBLfdninEJX9/2026-10/",
+  "totalAprovadas": 311307,
+  "noPainel": 3000,
+  "porUf": {
+    "SP": 60262,
+    "MG": 29473,
+    "PR": 25211,
+    "SC": 22320,
+    "RS": 21655,
+    "RJ": 18918,
+    "BA": 16098,
+    "GO": 14517,
+    "CE": 11115,
+    "PA": 9706,
+    "MT": 8920,
+    "DF": 8741,
+    "PE": 8573,
+    "MA": 7541,
+    "ES": 6865,
+    "PB": 6489,
+    "MS": 5306,
+    "RN": 5125,
+    "AM": 4889,
+    "PI": 4730,
+    "AL": 3445,
+    "TO": 2993,
+    "SE": 2749,
+    "RO": 2494,
+    "AP": 1165,
+    "AC": 1062,
+    "RR": 944,
+    "EX": 1
+  },
+  "porSegmento": {
+    "Construtora": 95721,
+    "Engenharia": 92393,
+    "Instalação elétrica": 59278,
+    "Arquitetura": 26130,
+    "Climatização": 20924,
+    "Montagem industrial": 14468,
+    "Redes de energia": 1641,
+    "Iluminação e sinalização": 752
+  },
+  "etapas": {
+    "estabelecimentos_lidos": 73809386,
+    "cnae_ativos": 896505,
+    "sem_celular": 230802,
+    "muito_novos": 136087,
+    "mei": 216364,
+    "aprovadas": 311307
+  }
+}```
