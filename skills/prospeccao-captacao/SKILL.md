@@ -10,7 +10,7 @@ Contexto geral, painel e ciclo de aprendizado: skill `prospeccao-funil`.
 ## Como funciona hoje
 
 - A lista vem do painel Prospecção Elétrica (https://claude.ai/artifact/BAJojSBRshrr1MRC4Eoujg). Cada empresa tem um de 3 modelos de mensagem (campo `modelo`), escolhido pelo CNPJ, com nome da empresa, cidade e atividade.
-- Felipe clica em "Abrir no WhatsApp", revisa e envia. O clique já marca "Contatado".
+- Felipe abre a aba "Fila de hoje" (15 novas + follow-ups vencidos), confere, clica em "Abrir no WhatsApp" ou "Enviar follow-up" e envia. O clique já marca "Contatado" (ou grava `followupEm`). Push da fila seg–sex 08h37; check-in dos retornos com o Claude seg–sex 17h47 (ver `docs/automacao-whatsapp.md`).
 - Textos, segmentos, porte, região e prioridade ficam em `prospeccao.toml` no repositório `radar-eletrico`. Mudança permanente no texto vai lá, não só numa conversa.
 
 ## Regras

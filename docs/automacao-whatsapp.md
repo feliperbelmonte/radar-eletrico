@@ -20,7 +20,16 @@ Conclusão: o 1º contato pelo WhatsApp continua sendo **um toque do Felipe** (a
 
 ## Desenho final (o máximo automatizado com segurança)
 
-### Fase 1 — Fila diária "1 toque" (automação do Claude)
+### Fase 1 — Fila diária "1 toque" (automação do Claude) — IMPLANTADA em 30/10/2026
+Decisão do Felipe (29/10/2026): "vc prepara td e eu só dou o confere e mando a msg"; o painel deve ser atualizado conforme ele envia, e o Claude pergunta como está o retorno para atualizar o controle geral.
+
+Como ficou:
+- Painel: aba **Fila de hoje** (padrão ao abrir) calculada no próprio painel: follow-ups vencidos (status `contatado`, 5+ dias úteis desde `contatadoEm`, sem `followupEm`) + empresas novas `a_contatar` na ordem de prioridade até completar 15 no dia; as já enviadas hoje ficam no fim. Botão verde "Abrir no WhatsApp" marca `contatado` + `contatadoEm`; "Enviar follow-up" grava `followupEm`. Texto do follow-up: constante `FOLLOWUP_TEXTO` em `prospeccao/template.html`.
+- Tarefa agendada `trig_01MFZpZoBARsPm33RxiFzMc5` "Prospecção Elétrica — fila do dia": seg–sex 08h37 (Brasília), só lê o banco e manda push com a fila do dia e os números. Não envia nada para empresas.
+- Check-in dos retornos: lembrete na conversa do Felipe com o Claude (send_later, seg–sex 17h47), que lista quem foi contatado, pergunta quem respondeu, atualiza status/nota no banco do painel e reagenda o próximo dia útil.
+- Tarefa semanal `trig_01HbnmhPxewzf88gA2jV27uv` (segunda 14h41) continua republicando a lista nova; os status ficam no banco e não se perdem.
+
+Plano original:
 - Tarefa agendada de segunda a sexta, ~08h40: lê o painel, separa as **15 empresas do dia** (prioridade PR → Curitiba/litoral → região de Jaraguá do Sul → resto, segundo `prospeccao.toml`) e mais os **follow-ups vencidos** (contatadas há 5 dias úteis sem resposta, máximo 1 follow-up por empresa).
 - Publica no painel uma aba "Hoje" com essa fila e manda push: "Prospecção: 15 novas + 4 follow-ups prontos".
 - O Felipe abre o painel no celular, toca "Abrir no WhatsApp" → enviar. Leva ~5 min por dia. O toque já marca "Contatado" e grava a data.

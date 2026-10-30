@@ -61,6 +61,8 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 
 ## Histórico
 
+- 2026-10-30: painel ganhou a aba "Fila de hoje" (15 novas + follow-ups vencidos, campo `followupEm`); tarefa `trig_01MFZpZoBARsPm33RxiFzMc5` manda push da fila seg–sex 08h37; check-in dos retornos na conversa do Felipe seg–sex 17h47. Detalhes em `docs/automacao-whatsapp.md`.
+
 - 2026-10-29: skills do funil de prospecção (captação, resposta, qualificação, proposta e visão geral com o ciclo de aprendizado); painel ganhou status qualificado/proposta e grava segmento, região e modelo de mensagem em cada status.
 - 2026-10-29: prioridade da prospecção: PR primeiro (CREA-PR), começando por Curitiba e litoral (mais perto de Jaraguá do Sul/SC, onde Felipe mora), depois SC; coleta semanal.
 - 2026-10-29: 1ª rodada da prospecção falhou (404 no caminho antigo da Receita); download passou para o WebDAV do compartilhamento Nextcloud.
