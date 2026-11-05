@@ -120,20 +120,22 @@ ufs = ["PR", "SC", "SP"]
 ativo = true
 dias = 30                  # contratos publicados nos últimos N dias
 max_paginas = 600          # teto de páginas da API por rodada (do dia mais recente para trás)
-tamanho_pagina = 50
+tamanho_pagina = 500      # se a API recusar (400), cai para 50
 timeout_segundos = 60
 tentativas = 3
 pausa_entre_paginas = 0.6   # a API devolve 429 (Too Many Requests) com pausa curta
 valor_minimo = 30000       # contratos menores raramente precisam de reforço externo
-max_caracteres_objeto = 90
+max_caracteres_objeto = 110
 termos = ["eletric*", "subestac*", "fotovolta*", "usina solar", "energia solar", "spda", "para-raio*", "pararaio*",
           "iluminacao publica", "iluminacao", "cabine primaria", "rede de distribuicao", "grupo gerador",
-          "quadro de distribuicao", "cabeamento estruturado", "automacao"]
+          "quadro de distribuicao", "quadro eletrico", "instalac* eletric*"]
 exige_servico = ["servico*", "obra*", "execucao", "instalac*", "manutenc*", "reforma*", "construc*", "implantac*",
                  "montagem", "ampliac*", "adequac*", "retrofit", "modernizac*", "eficientizac*"]
 excluir = ["fornecimento de energia", "consumo de energia", "energia eletrica consumida", "conta de energia",
            "locacao", "veiculo*", "combustive*", "eletrodomestic*", "eletronicos",
-           "medicament*", "alimenta*", "vigilancia", "limpeza", "telefonia", "internet", "software"]
+           "medicament*", "alimenta*", "vigilancia", "limpeza", "telefonia", "internet", "software",
+           "evento*", "festa*", "festivida*", "show*", "palco*", "sonorizac*", "natal*", "carnaval", "decoracao",
+           "bancari*", "ar condicionado", "ar-condicionado", "climatiz*", "refrigerac*", "elevador*"]
 [licitacoes.segmento]
 rotulo = "Venceu licitação"
 atividade = "obras e serviços públicos"

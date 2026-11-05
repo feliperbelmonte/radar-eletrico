@@ -79,6 +79,19 @@ class TestContratos(unittest.TestCase):
         self.assertTrue(s["objeto"].startswith("execução de obra"))
         self.assertIn("/app/contratos/76417005000186/2026/7", s["link"])
 
+    def test_resumo_do_objeto(self):
+        r = leads.resumir_objeto
+        t = self.LIC["termos"]
+        self.assertEqual(r("CONTRATAÇÃO DE EMPRESA ESPECIALIZADA PARA A PRESTAÇÃO DE SERVIÇOS DE INSTALAÇÃO DE SISTEMA "
+                           "FOTOVOLTAICO NA ESCOLA MUNICIPAL", t, 110), "instalação de sistema fotovoltaico na escola municipal")
+        self.assertEqual(r("O objeto do presente procedimento é a CONTRATAÇÃO DE EMPRESA DE ENGENHARIA (PESSOA JURÍDICA) para "
+                           "elaboração de projeto elétrico e SPDA da sede", t, 110), "elaboração de projeto elétrico e SPDA da sede")
+
+    def test_descarta_eventos_e_ti(self):
+        c = leads.classificar_contrato
+        self.assertIsNone(c(self.contrato("ESTRUTURA PARA EVENTOS COM GERADORES DE ENERGIA ELÉTRICA E PALCO"), self.LIC))
+        self.assertIsNone(c(self.contrato("SERVIÇOS DE AUTOMAÇÃO BANCÁRIA E MANUTENÇÃO"), self.LIC))
+
     def test_descarta(self):
         c = leads.classificar_contrato
         self.assertIsNone(c(self.contrato("FORNECIMENTO DE ENERGIA ELÉTRICA PARA A SEDE"), self.LIC))

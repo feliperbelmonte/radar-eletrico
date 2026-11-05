@@ -254,6 +254,44 @@ def _casa(texto: str, termos: list[str]) -> bool:
     return False
 
 
+_BOILERPLATE = re.compile(
+    r"^(\d[\d.\-/]*\s*-\s*)?"                                     # nº do processo
+    r"((o|a)\s+)?(presente\s+)?(objeto|contrato|instrumento)?[^:]{0,60}?"
+    r"\b(consiste|tem por objeto|e|refere-se)\b\s*(na|no|a|o|em)?\s*:?\s*", re.I)
+_CONTRATACAO = re.compile(
+    r"^(contratacao|contrato|credenciamento|registro de precos?)\s+(emergencial\s+)?(para\s+)?"
+    r"(de|da|do)?\s*(uma\s+)?(empresas?|pessoas?\s*\(?s?\)?\s*juridicas?\s*\(?s?\)?|"
+    r"microempreendedor[^,]*,[^,]*,?[^,]*?)?\s*(de engenharia\s*)?(\([^)]*\)\s*)?"
+    r"(especializadas?\s*)?(em|para|na|no|de)?\s*(a|o)?\s*"
+    r"((prestacao|execucao) de servicos?( tecnicos?)?( especializados?)?\s*(de|em|para)?\s*(a|o)?\s*)?", re.I)
+
+
+def _base(txt: str) -> str:
+    """Minúsculas sem acento com o mesmo comprimento do texto (para recortar o original)."""
+    return "".join((unicodedata.normalize("NFKD", c)[0] if c.strip() else " ") for c in txt).lower()
+
+
+def resumir_objeto(bruto: str, termos: list[str], limite: int) -> str:
+    """Tira o juridiquês do começo e recorta o trecho em torno do termo elétrico."""
+    txt = re.sub(r"\s+", " ", bruto or "").strip()
+    for rx in (_BOILERPLATE, _CONTRATACAO):
+        m = rx.match(_base(txt))
+        if m and m.end() < len(txt) - 15:
+            txt = txt[m.end():]
+    base = _base(txt)
+    pos = min((m.start() for t in termos
+               if (m := re.search(r"(?<!\w)" + (re.escape(_norm(t)[:-1]) + r"\w*" if t.endswith("*") else re.escape(_norm(t))), base))),
+              default=0)
+    if pos > limite - 40:
+        ini = txt.rfind(" ", 0, pos - 25) + 1
+        txt = "…" + txt[ini:]
+    if len(txt) > limite:
+        txt = txt[:limite].rsplit(" ", 1)[0].rstrip(",;:-") + "…"
+    if txt.isupper() or sum(c.isupper() for c in txt) > len(txt) * 0.6:
+        txt = txt.lower()
+    return txt[:1].lower() + txt[1:] if not txt.startswith("…") else txt
+
+
 def classificar_contrato(item: dict, lic: dict) -> dict | None:
     """Contrato do PNCP → sinal para a empresa vencedora, ou None se não interessa."""
     ni = re.sub(r"\D", "", str(item.get("niFornecedor") or ""))
@@ -271,15 +309,12 @@ def classificar_contrato(item: dict, lic: dict) -> dict | None:
     uo = item.get("unidadeOrgao") or {}
     cnpj_org = (item.get("orgaoEntidade") or {}).get("cnpj") or ""
     ano, seq = item.get("anoContrato"), item.get("sequencialContrato")
-    bruto = (item.get("objetoContrato") or "").strip()
-    curto = re.sub(r"\s+", " ", bruto)
-    if len(curto) > lic.get("max_caracteres_objeto", 90):
-        curto = curto[: lic.get("max_caracteres_objeto", 90)].rsplit(" ", 1)[0] + "…"
+    curto = resumir_objeto(item.get("objetoContrato") or "", lic["termos"], lic.get("max_caracteres_objeto", 90))
     return {
         "cnpj": ni,
         "orgao": titulo(orgao),
         "orgao_uf": uo.get("ufSigla") or "",
-        "objeto": (curto.lower() if curto.isupper() else curto[:1].lower() + curto[1:]),
+        "objeto": curto,
         "valor": valor,
         "assinatura": (item.get("dataAssinatura") or "")[:10],
         "link": f"https://pncp.gov.br/app/contratos/{cnpj_org}/{ano}/{seq}" if cnpj_org and ano and seq else "",
@@ -289,6 +324,7 @@ def classificar_contrato(item: dict, lic: dict) -> dict | None:
 def baixar_contratos(lic: dict, hoje: date) -> tuple[list[dict], dict]:
     """Contratos publicados nos últimos N dias (do mais recente para trás), até o limite de páginas."""
     itens, info = [], {"paginas": 0, "falhas": 0, "truncado": False}
+    tamanho = lic["tamanho_pagina"]
     for d in range(1, lic["dias"] + 1):
         dia = (hoje - timedelta(days=d)).strftime("%Y%m%d")
         pagina, total = 1, 1
@@ -297,7 +333,7 @@ def baixar_contratos(lic: dict, hoje: date) -> tuple[list[dict], dict]:
                 info["truncado"] = True
                 return itens, info
             q = urllib.parse.urlencode({"dataInicial": dia, "dataFinal": dia, "pagina": pagina,
-                                        "tamanhoPagina": lic["tamanho_pagina"]})
+                                        "tamanhoPagina": tamanho})
             dados = None
             for tentativa in range(lic["tentativas"]):
                 try:
@@ -308,6 +344,10 @@ def baixar_contratos(lic: dict, hoje: date) -> tuple[list[dict], dict]:
                     break
                 except (urllib.error.URLError, TimeoutError, ConnectionError, OSError, json.JSONDecodeError) as e:
                     log(f"  contratos {dia} p{pagina}: {type(e).__name__}: {e} (tentativa {tentativa + 1})")
+                    if getattr(e, "code", None) == 400 and tamanho > 50:  # página grande recusada: volta ao padrão
+                        tamanho, total = 50, 1
+                        info["tamanho_pagina"] = 50
+                        continue
                     limite = getattr(e, "code", None) == 429  # PNCP limita requisições: esperar mais
                     time.sleep(30 * (tentativa + 1) if limite else min(60, 5 * 3 ** tentativa))
             info["paginas"] += 1
