@@ -26,6 +26,7 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 | `docs/prompt-v1-claude-sozinho.md` | Histórico: prompt antigo em que a Claude buscava sozinha |
 | `prospeccao.toml` | **Mudar o público da prospecção**: CNAEs, porte, MEI, UFs, prioridade, mensagens |
 | `leads.py`, `prospeccao/template.html`, `.github/workflows/leads.yml`, `tests/test_leads.py` | Prospecção de empresas (ver seção própria) |
+| `docs/` | Histórico de decisões: `automacao-whatsapp.md` (rotina diária), `foco-2026-11-05.md` (filtros e trilhas) |
 
 ## Prospecção de empresas (leads)
 
@@ -60,6 +61,8 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 - Datas do PNCP vêm sem fuso: tratadas como horário de Brasília (UTC-3).
 
 ## Histórico
+
+- 2026-11-05: novo foco da prospecção (docs/foco-2026-11-05.md): Simples Nacional, ME+, 10+ anos; trilhas `licitacao` (contratos PNCP, `--contratos` para testes), `pericia` (advocacia) e `projeto`, com textos e cota diária por trilha (`[fila]`); aba "Demandas em plataformas" (coleção `demandas`) alimentada pela tarefa `trig_01YF5Y5vQwziDM2dueEhNnf3`; skills `prospeccao-pericia` e `prospeccao-plataformas`.
 
 - 2026-10-30: painel ganhou a aba "Fila de hoje" (15 novas + follow-ups vencidos, campo `followupEm`); tarefa `trig_01MFZpZoBARsPm33RxiFzMc5` manda push da fila seg–sex 08h37; check-in dos retornos na conversa do Felipe seg–sex 17h47. Detalhes em `docs/automacao-whatsapp.md`.
 

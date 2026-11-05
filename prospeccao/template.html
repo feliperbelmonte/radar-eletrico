@@ -122,6 +122,10 @@
   .badge.cliente { background: var(--wa); color: var(--wa-ink); border-color: transparent; }
   .badge.sem_interesse { background: var(--crit-soft); color: var(--crit); border-color: transparent; }
   .badge.fu { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+  .tags .trilha { font-weight: 600; }
+  .tags .trilha.licitacao { background: var(--warn-soft); color: var(--warn); }
+  .tags .trilha.pericia { background: var(--accent-soft); color: var(--accent-ink); }
+  .sinal { font-size: 0.82rem; color: var(--text-muted); background: var(--warn-soft); border-radius: 7px; padding: 7px 10px; }
   .chip.hoje { border-color: var(--wa); color: var(--wa); font-weight: 600; }
   .chip.hoje.on { background: var(--wa); border-color: var(--wa); color: #fff; }
   .secao { font-family: "Archivo", system-ui, sans-serif; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 14px 2px 2px; }
@@ -176,6 +180,7 @@
     <input type="search" id="busca" placeholder="Buscar empresa, cidade ou telefone…" aria-label="Buscar">
     <select id="uf" aria-label="Estado"><option value="">Todas as UF</option></select>
     <select id="seg" aria-label="Segmento"><option value="">Todos os segmentos</option></select>
+    <select id="tri" aria-label="Trilha"><option value="">Todas as trilhas</option><option value="licitacao">Licitação ganha</option><option value="pericia">Perícia</option><option value="projeto">Projeto</option></select>
     <div class="chips" id="chips"></div>
   </div>
   <p class="contagem" id="contagem"></p>
@@ -191,9 +196,14 @@
 // Bloco reescrito pelo leads.py a cada atualização — não editar à mão.
 const LEADS = [];
 const RESUMO = null;
+const FILA = {};
 /* LEADS_DATA_END */
 
-const META_DIA = 15;
+const META_DIA = (typeof FILA === "object" && FILA.meta) || 15;
+// Cota diária por trilha (prospeccao.toml [fila]); a sobra de uma trilha vai para as outras
+const COTAS = { licitacao: FILA.licitacao ?? 5, pericia: FILA.pericia ?? 4, projeto: FILA.projeto ?? 6 };
+const ORDEM_TRILHAS = ["licitacao", "pericia", "projeto"];
+const trilhaDe = (l) => l.trilha || "projeto";
 // Follow-up: 1 só, depois de DIAS_FOLLOWUP dias úteis sem resposta (skill prospeccao-captacao)
 const DIAS_FOLLOWUP = 5;
 const FOLLOWUP_TEXTO = "Oi, tudo bem? Só retomando a mensagem que mandei semana passada: se em algum momento vocês precisarem de projeto elétrico, fico à disposição. Se não fizer sentido, me avisa que não mando mais.";
@@ -208,11 +218,14 @@ const STATUS = [
   ["sem_interesse", "Sem interesse"],
 ];
 const ROTULO = Object.fromEntries(STATUS);
-const estado = { filtro: "hoje", uf: "", seg: "", q: "", limite: 30 };
+const ROTULO_TRILHA = { licitacao: "Licitação ganha", pericia: "Perícia", projeto: "Projeto" };
+const estado = { filtro: "hoje", uf: "", seg: "", tri: "", q: "", limite: 30 };
+let demandas = {};   // id -> demanda de plataforma (Workana, 99Freelas...), gravada pela tarefa agendada
+const ST_DEMANDA = [["nova", "Nova"], ["proposta", "Proposta enviada"], ["ganha", "Ganha"], ["descartada", "Descartada"]];
 let marcas = {};      // cnpj -> {status, quando, nota}
 let db = null;
 const lerFiltro = () => { try { return JSON.parse(localStorage.getItem("prosp-filtros") || "{}"); } catch { return {}; } };
-const salvarFiltro = () => { try { localStorage.setItem("prosp-filtros", JSON.stringify({ filtro: estado.filtro, uf: estado.uf, seg: estado.seg })); } catch {} };
+const salvarFiltro = () => { try { localStorage.setItem("prosp-filtros", JSON.stringify({ filtro: estado.filtro, uf: estado.uf, seg: estado.seg, tri: estado.tri })); } catch {} };
 Object.assign(estado, lerFiltro());
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -230,7 +243,7 @@ function diasUteisDesde(iso) {
   }
   return n;
 }
-const passaFiltros = (l) => (!estado.uf || l.uf === estado.uf) && (!estado.seg || l.segmento === estado.seg);
+const passaFiltros = (l) => (!estado.uf || l.uf === estado.uf) && (!estado.seg || l.segmento === estado.seg) && (!estado.tri || trilhaDe(l) === estado.tri);
 
 // Fila do dia: follow-ups vencidos + novas até completar a meta; quem já foi feito hoje fica no fim, apagado
 function filaHoje() {
@@ -243,10 +256,18 @@ function filaHoje() {
     else if (m.contatadoEm && diaBR(m.contatadoEm) === hoje) novoFeito.push(l);
   }
   const vagas = Math.max(0, META_DIA - novoFeito.length);
-  for (const l of LEADS) {
-    if (novoPend.length >= vagas) break;
-    if (statusDe(l) === "a_contatar" && passaFiltros(l)) novoPend.push(l);
+  const feitosPor = {};
+  for (const l of novoFeito) feitosPor[trilhaDe(l)] = (feitosPor[trilhaDe(l)] || 0) + 1;
+  const livres = {};
+  for (const t of ORDEM_TRILHAS) livres[t] = [];
+  for (const l of LEADS) if (statusDe(l) === "a_contatar" && passaFiltros(l)) (livres[trilhaDe(l)] || livres.projeto).push(l);
+  const escolhidos = new Set();
+  for (const t of ORDEM_TRILHAS) {
+    const n = Math.max(0, (COTAS[t] || 0) - (feitosPor[t] || 0));
+    for (const l of livres[t].slice(0, n)) { if (escolhidos.size < vagas) escolhidos.add(l); }
   }
+  for (const t of ORDEM_TRILHAS) for (const l of livres[t]) { if (escolhidos.size >= vagas) break; escolhidos.add(l); }
+  novoPend.push(...LEADS.filter((l) => escolhidos.has(l)).sort((a, b) => ORDEM_TRILHAS.indexOf(trilhaDe(a)) - ORDEM_TRILHAS.indexOf(trilhaDe(b))));
   return { fuPend, fuFeito, novoPend, novoFeito };
 }
 
@@ -270,7 +291,9 @@ function renderNumeros() {
   const fuTot = f.fuPend.length + f.fuFeito.length;
   document.getElementById("hojeFu").textContent = fuTot ? `follow-ups: ${f.fuFeito.length} / ${fuTot}` : "";
   const pend = f.fuPend.length + f.novoPend.length;
-  document.getElementById("chips").innerHTML = `<button class="chip hoje${estado.filtro === "hoje" ? " on" : ""}" data-f="hoje">Fila de hoje<span class="c">${pend}</span></button>` + STATUS.map(([k, r]) =>
+  const dNovas = Object.values(demandas).filter((d) => (d.status || "nova") === "nova").length;
+  document.getElementById("chips").innerHTML = `<button class="chip hoje${estado.filtro === "hoje" ? " on" : ""}" data-f="hoje">Fila de hoje<span class="c">${pend}</span></button>`
+    + `<button class="chip hoje${estado.filtro === "demandas" ? " on" : ""}" data-f="demandas">Demandas em plataformas<span class="c">${dNovas}</span></button>` + STATUS.map(([k, r]) =>
     `<button class="chip${estado.filtro === k ? " on" : ""}" data-f="${k}">${r}<span class="c">${c[k]}</span></button>`).join("")
     + `<button class="chip${estado.filtro === "" ? " on" : ""}" data-f="">Todas</button>`;
 }
@@ -282,6 +305,7 @@ function filtrados() {
     if (estado.filtro && estado.filtro !== "hoje" && statusDe(l) !== estado.filtro) return false;
     if (estado.uf && l.uf !== estado.uf) return false;
     if (estado.seg && l.segmento !== estado.seg) return false;
+    if (estado.tri && trilhaDe(l) !== estado.tri) return false;
     if (q) {
       const hay = `${l.empresa} ${l.razao} ${l.cidade} ${l.bairro} ${l.uf} ${l.segmento}`.toLowerCase();
       if (!hay.includes(q) && !(qd.length >= 4 && l.celular.includes(qd))) return false;
@@ -307,7 +331,8 @@ function cartao(l, tipo) {
       </div>
       <span>${fu ? `<span class="badge fu">Follow-up · 1º contato ${esc(desde)}</span> ` : ""}<span class="badge ${st}">${ROTULO[st]}</span></span>
     </div>
-    <div class="tags"><span>${esc(l.segmento)}</span><span>${esc(l.porte)}</span>${l.desde ? `<span>desde ${esc(l.desde)}</span>` : ""}</div>
+    ${l.sinal ? `<div class="sinal">Contrato com <strong>${esc(l.sinal.orgao)}</strong>${l.sinal.uf ? " (" + esc(l.sinal.uf) + ")" : ""}: ${esc(l.sinal.objeto)}${l.sinal.assinatura ? " · assinado em " + esc(l.sinal.assinatura) : ""}${l.sinal.valor ? " · " + esc(Number(l.sinal.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })) : ""}${l.sinal.link ? ` · <a href="${esc(l.sinal.link)}" target="_blank" rel="noopener">ver no PNCP</a>` : ""}</div>` : ""}
+    <div class="tags"><span class="trilha ${esc(trilhaDe(l))}">${esc(ROTULO_TRILHA[trilhaDe(l)])}</span><span>${esc(l.segmento)}</span><span>${esc(l.porte)}</span>${l.desde ? `<span>desde ${esc(l.desde)}</span>` : ""}</div>
     <div class="contato">${esc(fone(l.celular))}${l.email ? " · " + esc(l.email) : ""}</div>
     <details class="msg"${tipo && !feito ? " open" : ""}><summary>${fu ? "Mensagem de follow-up" : "Ver mensagem"}</summary><p>${esc(texto)}</p></details>
     <div class="acoes">
@@ -336,8 +361,43 @@ function renderHoje() {
     || `<div class="vazio">Nada para hoje com esses filtros.</div>`;
 }
 
+function renderDemandas() {
+  const lista = document.getElementById("lista");
+  document.getElementById("mais").hidden = true;
+  const ordem = { nova: 0, proposta: 1, ganha: 2, descartada: 3 };
+  const itens = Object.entries(demandas).map(([id, d]) => ({ id, ...d }))
+    .sort((a, b) => (ordem[a.status || "nova"] - ordem[b.status || "nova"]) || String(b.encontradoEm || "").localeCompare(String(a.encontradoEm || "")));
+  document.getElementById("contagem").textContent = itens.length
+    ? `${itens.length} demanda${itens.length === 1 ? " achada" : "s achadas"} nas plataformas (terça e quinta de manhã). Responda pela própria plataforma: contato por fora dela é proibido pelas regras delas.`
+    : "Nenhuma demanda ainda. A busca nas plataformas roda terça e quinta de manhã, com o app Claude aberto no seu computador.";
+  if (!itens.length) { lista.innerHTML = `<div class="vazio">Nada por aqui ainda.</div>`; return; }
+  lista.innerHTML = itens.map((d) => {
+    const st = d.status || "nova";
+    return `<article class="card${st !== "nova" ? " feito" : ""}" data-demanda="${esc(d.id)}">
+      <div class="linha1"><div style="min-width:0"><div class="nome">${esc(d.titulo)}</div>
+        <div class="local">${esc(d.plataforma)}${d.local ? " · " + esc(d.local) : ""}${d.publicado ? " · " + esc(d.publicado) : ""}${d.propostas ? " · " + esc(d.propostas) : ""}</div></div>
+        <span class="badge ${st === "nova" ? "contatado" : st === "ganha" ? "cliente" : st === "descartada" ? "sem_interesse" : "proposta"}">${esc(Object.fromEntries(ST_DEMANDA)[st] || st)}</span></div>
+      ${d.resumo ? `<div class="local">${esc(d.resumo)}</div>` : ""}
+      ${d.encaixe ? `<div class="tags"><span class="trilha projeto">${esc(d.encaixe)}</span></div>` : ""}
+      <div class="acoes">
+        <a class="btn-wa" href="${esc(d.link)}" target="_blank" rel="noopener">Abrir na plataforma</a>
+        <select data-acao="st-demanda" aria-label="Status">${ST_DEMANDA.map(([k, r]) => `<option value="${k}"${k === st ? " selected" : ""}>${r}</option>`).join("")}</select>
+        <input class="nota" data-acao="nota-demanda" placeholder="Anotação (valor proposto, prazo…)" value="${esc(d.nota || "")}" ${db ? "" : "disabled"}>
+      </div></article>`;
+  }).join("");
+}
+
+async function gravarDemanda(id, mudanca) {
+  demandas = { ...demandas, [id]: { ...demandas[id], ...mudanca, atualizadoEm: new Date().toISOString() } };
+  render();
+  if (!db) return;
+  try { await db.doc("demandas/" + id).set(demandas[id]); }
+  catch (e) { mostrarAviso("Não consegui salvar agora (" + (e && e.code || "erro") + ")."); }
+}
+
 function renderLista() {
   if (estado.filtro === "hoje") return renderHoje();
+  if (estado.filtro === "demandas") return renderDemandas();
   const itens = filtrados();
   const lista = document.getElementById("lista");
   document.getElementById("contagem").textContent =
@@ -360,6 +420,7 @@ async function gravar(cnpj, mudanca) {
   const lead = LEADS.find((l) => l.cnpj === cnpj) || {};
   // segmento, região e modelo de mensagem vão junto para a revisão do funil (o que responde melhor)
   const contexto = { empresa: lead.empresa || "", segmento: lead.segmento || "", uf: lead.uf || "", cidade: lead.cidade || "", modelo: lead.modelo || 0 };
+  contexto.trilha = trilhaDe(lead);
   const novo = { ...contexto, ...atual, ...mudanca, quando: new Date().toISOString() };
   marcas = { ...marcas, [cnpj]: novo };
   render();
@@ -379,6 +440,7 @@ document.getElementById("chips").addEventListener("click", (e) => {
 });
 document.getElementById("uf").addEventListener("change", (e) => { estado.uf = e.target.value; estado.limite = 30; salvarFiltro(); render(); });
 document.getElementById("seg").addEventListener("change", (e) => { estado.seg = e.target.value; estado.limite = 30; salvarFiltro(); render(); });
+document.getElementById("tri").addEventListener("change", (e) => { estado.tri = e.target.value; estado.limite = 30; salvarFiltro(); render(); });
 let tBusca;
 document.getElementById("busca").addEventListener("input", (e) => {
   clearTimeout(tBusca); tBusca = setTimeout(() => { estado.q = e.target.value; estado.limite = 30; renderLista(); }, 150);
@@ -405,6 +467,12 @@ lista.addEventListener("click", async (e) => {
 });
 lista.addEventListener("change", (e) => {
   const alvo = e.target.closest("[data-acao]"); if (!alvo) return;
+  const cd = alvo.closest("[data-demanda]");
+  if (cd) {
+    if (alvo.dataset.acao === "st-demanda") gravarDemanda(cd.dataset.demanda, { status: alvo.value });
+    if (alvo.dataset.acao === "nota-demanda") gravarDemanda(cd.dataset.demanda, { nota: alvo.value.slice(0, 500) });
+    return;
+  }
   const cnpj = alvo.closest(".card").dataset.cnpj;
   if (alvo.dataset.acao === "status") {
     const extra = alvo.value !== "a_contatar" && !(marcas[cnpj] || {}).contatadoEm ? { contatadoEm: new Date().toISOString() } : {};
@@ -424,10 +492,11 @@ function iniciar() {
   for (const sg of segs) { const o = document.createElement("option"); o.value = sg; o.textContent = sg; selS.appendChild(o); }
   selS.value = segs.includes(estado.seg) ? estado.seg : "";
   estado.seg = selS.value;
+  document.getElementById("tri").value = estado.tri || "";
   if (RESUMO) {
     const quando = new Date(RESUMO.geradoEm).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
     document.getElementById("rodape").textContent =
-      `Lista de ${quando}: ${RESUMO.totalAprovadas} empresas no país passaram nos filtros (segmentos que contratam projeto elétrico, ativas, com celular, sem MEI); ` +
+      `Lista de ${quando}: ${RESUMO.totalAprovadas} empresas no país passaram nos filtros (optantes do Simples, ME ou maiores, 10+ anos, com celular; quem venceu contrato público recente na área entra mesmo sem esses critérios); ` +
       `as ${RESUMO.noPainel} mais prioritárias estão aqui, começando pelo Paraná (região de Curitiba e litoral primeiro). Fonte: dados abertos de CNPJ da Receita Federal. ` +
       `Quem pedir para não receber mais mensagens: marque "Sem interesse".`;
   }
@@ -444,6 +513,12 @@ iniciar();
     marcas = novo;
     render();
   }, (err) => mostrarAviso("Parei de receber atualizações de status (" + err.code + "). Recarregue a página."));
+  db.collection("demandas").onSnapshot((snap) => {
+    const novo = {};
+    for (const d of snap.docs) novo[d.id] = d.data();
+    demandas = novo;
+    render();
+  }, () => {});
   renderLista();
 })();
 </script>

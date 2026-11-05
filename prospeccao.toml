@@ -18,20 +18,39 @@ timeout_segundos = 120
 tentativas = 4
 
 [filtro]
+# Foco decidido pelo Felipe em 05/11/2026: optantes do Simples Nacional, de ME para cima, com 10+ anos de mercado.
 # Porte: "00" = não informado, "01" = microempresa, "03" = pequeno porte, "05" = demais (médias e grandes).
-portes = ["00", "01", "03", "05"]
+portes = ["01", "03", "05"]
 incluir_mei = false        # MEI normalmente é um profissional sozinho, sem demanda de projeto
-anos_minimos_atividade = 1
+exigir_simples = true      # só optantes do Simples Nacional (arquivo Simples.zip da Receita)
+anos_minimos_atividade = 10
+# Empresas cujo nome tenha um destes trechos ficam de fora (sem acento, minúsculas).
+excluir_nomes = ["recuperacao judicial", "em liquidacao", "falida", "massa falida", "administracao e participac"]
 # Aceitar também quem tem o CNAE do segmento só como atividade secundária.
 usar_cnae_secundario = false
 # Vazio = Brasil inteiro. Ex.: ["PR", "SC", "RS"]
 ufs = []
+
+# Regras que mudam por trilha (o resto vem de [filtro]).
+# Licitação: quem acabou de assinar contrato público é o sinal mais forte de aperto de prazo/documentação,
+# então vale para qualquer CNAE e porte ME+, sem exigir Simples nem 10 anos.
+[filtro_trilha.licitacao]
+exigir_simples = false
+anos_minimos_atividade = 2
 
 # ---------------------------------------------------------------------------
 # Segmentos: quem costuma precisar de projeto elétrico. A ordem é a prioridade
 # dentro de cada UF. "atividade" entra na mensagem ("trabalha com {atividade}").
 # Para tirar um segmento, apague o bloco; para incluir, copie um bloco e troque os CNAEs.
 # ---------------------------------------------------------------------------
+# trilha = "projeto" (padrão) ou "pericia" (textos próprios, ver [[mensagem]]).
+[[segmento]]
+id = "advocacia"
+trilha = "pericia"
+rotulo = "Advocacia (perícia)"
+atividade = "advocacia"
+cnaes = ["6911701"]
+
 [[segmento]]
 id = "eletrica"
 rotulo = "Instalação elétrica"
@@ -93,16 +112,51 @@ cidades = [
 ]
 ufs = ["PR", "SC", "RS", "SP", "MS", "MG", "RJ", "GO", "DF", "MT", "ES"]
 
+# ---------------------------------------------------------------------------
+# Trilha "licitacao": empresas que assinaram contrato público recente na área elétrica
+# (API de contratos do PNCP). A mensagem cita o contrato e oferece reforço técnico/documental.
+# ---------------------------------------------------------------------------
+[licitacoes]
+ativo = true
+dias = 30                  # contratos publicados nos últimos N dias
+max_paginas = 600          # teto de páginas da API por rodada (do dia mais recente para trás)
+tamanho_pagina = 50
+timeout_segundos = 60
+tentativas = 3
+pausa_entre_paginas = 0.2
+valor_minimo = 30000       # contratos menores raramente precisam de reforço externo
+max_caracteres_objeto = 90
+termos = ["eletric*", "subestac*", "fotovolta*", "usina solar", "energia solar", "spda", "para-raio*", "pararaio*",
+          "iluminacao publica", "iluminacao", "cabine primaria", "rede de distribuicao", "grupo gerador",
+          "quadro de distribuicao", "cabeamento estruturado", "automacao"]
+exige_servico = ["servico*", "obra*", "execucao", "instalac*", "manutenc*", "reforma*", "construc*", "implantac*",
+                 "montagem", "ampliac*", "adequac*", "retrofit", "modernizac*", "eficientizac*"]
+excluir = ["fornecimento de energia", "consumo de energia", "energia eletrica consumida", "conta de energia",
+           "locacao", "veiculo*", "combustive*", "eletrodomestic*", "eletronicos",
+           "medicament*", "alimenta*", "vigilancia", "limpeza", "telefonia", "internet", "software"]
+[licitacoes.segmento]
+rotulo = "Venceu licitação"
+atividade = "obras e serviços públicos"
+
+# Fila de hoje no painel: quantas de cada trilha por dia (o que faltar numa trilha é completado pelas outras).
+[fila]
+meta = 15
+licitacao = 5
+pericia = 4
+projeto = 6
+
 [saida]
 max_empresas = 3000      # quantas entram no painel (as mais prioritárias)
+max_por_trilha = { licitacao = 600, pericia = 800, projeto = 1600 }
 painel_titulo = "Prospecção Elétrica"
 
 [remetente]
 nome = "Felipe"
 registro = "CREA-PR"
 
-# Modelos de mensagem. Cada empresa recebe sempre o mesmo modelo (sorteado pelo CNPJ),
-# para variar o texto entre contatos. Campos: {nome} {registro} {empresa} {cidade} {atividade}.
+# Modelos de mensagem. Cada empresa recebe sempre o mesmo modelo da sua trilha (sorteado pelo CNPJ),
+# para variar o texto entre contatos. Campos: {nome} {registro} {empresa} {cidade} {atividade};
+# na trilha licitacao também {orgao} e {objeto}. Sem "trilha" = projeto.
 [[mensagem]]
 texto = "Oi, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Vi que a {empresa} trabalha com {atividade} em {cidade}. Faço só a parte de projeto elétrico (residencial, comercial e industrial, SPDA, laudos, subestação e ART), à distância, para empresas que preferem terceirizar isso ou precisam de reforço quando a demanda aperta. Vocês costumam precisar de projeto elétrico em algum serviço? Se não fizer sentido, é só me avisar que não mando mais."
 
@@ -111,3 +165,26 @@ texto = "Olá! Meu nome é {nome}, sou engenheiro eletricista ({registro}). Enco
 
 [[mensagem]]
 texto = "Oi, tudo certo? Sou o {nome}, engenheiro eletricista ({registro}). Vi a {empresa} em {cidade} e queria me apresentar: faço projetos elétricos, laudos e ART para empresas que precisam de um engenheiro eletricista nessa parte, sem custo fixo, cobrando por projeto. Hoje vocês têm alguém que faz isso ou costumam terceirizar? Se não for o caso, é só me falar."
+
+# --- Perícia (escritórios de advocacia). Só temas de engenharia elétrica: NÃO oferecer perícia de
+# periculosidade/insalubridade (CLT art. 195: exclusiva de engenheiro ou médico do trabalho).
+[[mensagem]]
+trilha = "pericia"
+texto = "Olá, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Vi o escritório {empresa} em {cidade} e queria me apresentar: atuo como assistente técnico e elaboro laudos e pareceres técnicos em processos que envolvem engenharia elétrica, como danos em equipamentos por oscilação ou queda de energia, incêndio de origem elétrica, falhas em instalações, SPDA e sistemas fotovoltaicos, e cobranças ou TOI da concessionária. Também ajudo na formulação de quesitos e na análise do laudo do perito do juízo. Faz sentido para algum caso de vocês? Se não, é só me avisar que não mando mais."
+
+[[mensagem]]
+trilha = "pericia"
+texto = "Bom dia! Sou o {nome}, engenheiro eletricista ({registro}). Encontrei o escritório {empresa} em {cidade} e queria deixar meu contato para casos com questão técnica elétrica: parecer técnico para instruir a inicial ou a contestação, quesitos, acompanhamento de perícia como assistente técnico e impugnação de laudo. Temas comuns: dano elétrico em equipamentos, incêndio, acidente com instalação, usina solar que não gera o contratado e divergência de consumo com a concessionária. Posso ajudar em algum processo? Se não for o caso, me avisa que não incomodo mais."
+
+[[mensagem]]
+trilha = "pericia"
+texto = "Olá! Aqui é o {nome}, engenheiro eletricista ({registro}). Faço laudos técnicos e atuo como assistente técnico em ações que dependem de prova técnica na área elétrica (danos elétricos, incêndio, instalações fora de norma, energia solar, medição e TOI da concessionária). Vi que o {empresa} atua em {cidade}: vocês costumam ter demandas assim? Se não fizer sentido, é só me falar."
+
+# --- Licitação (venceu contrato público recente na área).
+[[mensagem]]
+trilha = "licitacao"
+texto = "Oi, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Vi no PNCP o contrato da {empresa} com {orgao} ({objeto}). Se precisarem de reforço na parte técnica para cumprir os prazos, como projeto executivo, as built, memorial, ART ou documentação para medição e aprovação na concessionária, faço isso à distância, por demanda, sem custo fixo. Posso ajudar? Se não fizer sentido, me avisa que não mando mais."
+
+[[mensagem]]
+trilha = "licitacao"
+texto = "Olá! Sou o {nome}, engenheiro eletricista ({registro}). Vi que a {empresa} assinou contrato com {orgao} ({objeto}). Trabalho só com a parte de engenharia (projetos, as built, laudos, ART e documentação técnica), como braço extra para quem está com a equipe tomada pela execução. Se algum documento estiver apertado no prazo, posso assumir. Faz sentido conversarmos? Se não, me avisa que não incomodo mais."

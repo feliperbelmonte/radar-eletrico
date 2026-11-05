@@ -16,6 +16,12 @@ description: Visão geral do funil de prospecção do Felipe (engenheiro eletric
 - **Painel Prospecção Elétrica**: https://claude.ai/artifact/BAJojSBRshrr1MRC4Eoujg — lista de empresas, botão "Abrir no WhatsApp" com a mensagem pronta, status e anotação por empresa. Os status ficam no banco do painel, coleção `status`, um documento por CNPJ (14 dígitos) com `status`, `quando`, `contatadoEm`, `nota`, `empresa`, `segmento`, `uf`, `cidade`, `modelo` (1 a 3, qual texto de abordagem foi usado).
 - **Lista de empresas**: gerada toda segunda pelo GitHub Actions do repositório `feliperbelmonte/radar-eletrico` (`leads.py`, filtros e textos em `prospeccao.toml`) a partir dos dados abertos de CNPJ da Receita.
 - **Envio sempre manual**, uma empresa por vez, pelo WhatsApp do Felipe. Nunca propor disparo automático (banimento do número, LGPD).
+- **Trilhas** (campo `trilha` em cada empresa e no status; cota diária na Fila de hoje em `[fila]` do `prospeccao.toml`):
+  - `licitacao` — venceu contrato público recente na área elétrica (API de contratos do PNCP); mensagem cita órgão e objeto e oferece reforço em projeto executivo, as built, ART e documentação de prazo.
+  - `pericia` — escritórios de advocacia; laudo/parecer técnico e assistente técnico. Ver skill `prospeccao-pericia` (inclui cadastro de perito nos tribunais).
+  - `projeto` — demais segmentos (instaladoras, construtoras, arquitetura, engenharia...).
+- **Filtros desde 05/11/2026** (decisão do Felipe): optantes do Simples Nacional, ME para cima, 10+ anos; trilha licitação dispensa Simples e aceita 2+ anos.
+- **Demandas em plataformas** (Workana, 99Freelas): aba própria no painel, coleção `demandas`. Ver skill `prospeccao-plataformas`.
 
 ## Etapas (mesmos nomes dos status do painel)
 
