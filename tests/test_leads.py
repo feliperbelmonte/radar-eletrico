@@ -106,6 +106,7 @@ class TestPipeline(unittest.TestCase):
                 estab("12121212", "SILVA ADVOGADOS", "6911701", "PR", "7535", "41", "912120012", inicio=velho),
                 estab("13131313", "CONSTRUTORA VENCE", "4120400", "PR", "7535", "41", "913130013", inicio="20230101"),
                 estab("14141414", "EM RECUPERACAO", "4321500", "PR", "7535", "41", "914140014", inicio=velho),
+                estab("15151515", "GAUCHA", "4321500", "RS", "8801", "51", "915150015", inicio=velho),  # fora de PR/SC/SP
                 estab("22222222", "FILIAL", "4321500", "PR", "7535", "41", "922220009", matriz="2", inicio=velho),
             ]
             escrever_zip(d, "Estabelecimentos0.zip", linhas)
@@ -120,9 +121,10 @@ class TestPipeline(unittest.TestCase):
                 ["12121212", "SILVA E SOUZA SOCIEDADE DE ADVOGADOS", "2232", "49", "1,00", "01", ""],
                 ["13131313", "CONSTRUTORA VENCE LTDA", "2062", "49", "1,00", "05", ""],
                 ["14141414", "ELETRICA X LTDA EM RECUPERACAO JUDICIAL", "2062", "49", "1,00", "01", ""],
+                ["15151515", "GAUCHA ELETRICA LTDA", "2062", "49", "1,00", "01", ""],
             ])
             simples = [[b, "S", "20120101", "", "N", "", ""] for b in
-                       ["11111111", "22222222", "33333333", "55555555", "99999999", "12121212", "14141414"]]
+                       ["11111111", "22222222", "33333333", "55555555", "99999999", "12121212", "14141414", "15151515"]]
             simples.append(["77777777", "S", "20200101", "", "S", "20200101", ""])
             escrever_zip(d, "Simples.zip", simples)
             escrever_zip(d, "Municipios.zip", [["7535", "CURITIBA"], ["8179", "JOINVILLE"]])

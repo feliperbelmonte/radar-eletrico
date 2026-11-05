@@ -28,8 +28,8 @@ anos_minimos_atividade = 10
 excluir_nomes = ["recuperacao judicial", "em liquidacao", "falida", "massa falida", "administracao e participac"]
 # Aceitar também quem tem o CNAE do segmento só como atividade secundária.
 usar_cnae_secundario = false
-# Vazio = Brasil inteiro. Ex.: ["PR", "SC", "RS"]
-ufs = []
+# Vazio = Brasil inteiro. Felipe limitou a PR, SC e SP em 05/11/2026 (vale para todas as trilhas).
+ufs = ["PR", "SC", "SP"]
 
 # Regras que mudam por trilha (o resto vem de [filtro]).
 # Licitação: quem acabou de assinar contrato público é o sinal mais forte de aperto de prazo/documentação,
@@ -110,7 +110,7 @@ cidades = [
   "CAMPINA GRANDE DO SUL/PR", "QUATRO BARRAS/PR", "LAPA/PR", "RIO NEGRO/PR",
   "PARANAGUA/PR", "GUARATUBA/PR", "MATINHOS/PR", "PONTAL DO PARANA/PR",
 ]
-ufs = ["PR", "SC", "RS", "SP", "MS", "MG", "RJ", "GO", "DF", "MT", "ES"]
+ufs = ["PR", "SC", "SP"]
 
 # ---------------------------------------------------------------------------
 # Trilha "licitacao": empresas que assinaram contrato público recente na área elétrica

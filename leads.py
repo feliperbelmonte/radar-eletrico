@@ -379,7 +379,7 @@ def coletar(fonte: Fonte, cfg: dict, hoje: date, sinais: dict[str, dict] | None 
                 seg = None
             else:
                 continue
-            if ufs and c[E_UF] not in ufs and not sinal:
+            if ufs and c[E_UF] not in ufs:
                 continue
             stats["cnae_ativos"] += 1
             if c[E_INICIO] and c[E_INICIO] > limite_inicio:
