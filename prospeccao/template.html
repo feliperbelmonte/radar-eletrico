@@ -121,6 +121,7 @@
   .badge.proposta { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
   .badge.cliente { background: var(--wa); color: var(--wa-ink); border-color: transparent; }
   .badge.sem_interesse { background: var(--crit-soft); color: var(--crit); border-color: transparent; }
+  .badge.pulada { background: var(--surface-2); color: var(--text-faint); border-style: dashed; }
   .badge.fu { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
   .tags .trilha { font-weight: 600; }
   .tags .trilha.licitacao { background: var(--warn-soft); color: var(--warn); }
@@ -216,6 +217,7 @@ const STATUS = [
   ["proposta", "Proposta enviada"],
   ["cliente", "Cliente"],
   ["sem_interesse", "Sem interesse"],
+  ["pulada", "Pulada (não enviada)"],
 ];
 const ROTULO = Object.fromEntries(STATUS);
 const ROTULO_TRILHA = { licitacao: "Licitação ganha", pericia: "Perícia", projeto: "Projeto" };
@@ -282,7 +284,7 @@ function contar() {
 function renderNumeros() {
   const { c, hoje } = contar();
   document.getElementById("sTotal").textContent = LEADS.length;
-  document.getElementById("sContatado").textContent = LEADS.length - c.a_contatar;
+  document.getElementById("sContatado").textContent = LEADS.length - c.a_contatar - c.pulada;
   document.getElementById("sRespondeu").textContent = c.respondeu + c.qualificado + c.proposta + c.cliente;
   document.getElementById("sCliente").textContent = c.cliente;
   document.getElementById("hojeN").textContent = `${hoje} / ${META_DIA}`;
@@ -338,6 +340,7 @@ function cartao(l, tipo) {
     <div class="acoes">
       <a class="btn-wa" href="${esc(linkWa(l, texto))}" target="_blank" rel="noopener" data-acao="${fu ? "wa-fu" : "wa"}">${fu ? "Enviar follow-up" : "Abrir no WhatsApp"}</a>
       <button class="btn" data-acao="copiar">Copiar mensagem</button>
+      ${st === "a_contatar" ? `<button class="btn" data-acao="pular" title="Não serve: some da fila sem contar como contato">Pular</button>` : ""}
       <select data-acao="status" aria-label="Status">${STATUS.map(([k, r]) => `<option value="${k}"${k === st ? " selected" : ""}>${r}</option>`).join("")}</select>
       <input class="nota" data-acao="nota" placeholder="Anotação (ex.: retornar semana que vem)" value="${esc(m.nota || "")}" ${db ? "" : "disabled"}>
     </div>
@@ -455,6 +458,7 @@ lista.addEventListener("click", async (e) => {
   if (alvo.dataset.acao === "wa" && statusDe(lead) === "a_contatar") {
     gravar(cnpj, { status: "contatado", contatadoEm: new Date().toISOString() });
   }
+  if (alvo.dataset.acao === "pular") gravar(cnpj, { status: "pulada" });
   if (alvo.dataset.acao === "wa-fu" && !(marcas[cnpj] || {}).followupEm) {
     gravar(cnpj, { followupEm: new Date().toISOString() });
   }
@@ -475,7 +479,7 @@ lista.addEventListener("change", (e) => {
   }
   const cnpj = alvo.closest(".card").dataset.cnpj;
   if (alvo.dataset.acao === "status") {
-    const extra = alvo.value !== "a_contatar" && !(marcas[cnpj] || {}).contatadoEm ? { contatadoEm: new Date().toISOString() } : {};
+    const extra = !["a_contatar", "pulada"].includes(alvo.value) && !(marcas[cnpj] || {}).contatadoEm ? { contatadoEm: new Date().toISOString() } : {};
     gravar(cnpj, { status: alvo.value, ...extra });
   }
   if (alvo.dataset.acao === "nota") gravar(cnpj, { nota: alvo.value.slice(0, 500) });

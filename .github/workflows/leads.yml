@@ -1,11 +1,12 @@
 name: Prospecção Elétrica
 
 # A Receita publica os dados abertos de CNPJ uma vez por mês, sem dia fixo.
-# Roda toda segunda, 12:23 UTC (09h23 Brasília), para pegar o mês novo assim que sair,
-# e pelo botão "Run workflow". Entre um mês e outro a lista sai igual (os status ficam no painel).
+# Roda todo domingo, 09:23 UTC (06h23 Brasília), para a lista estar consolidada na segunda
+# (pedido do Felipe em 05/11/2026; a coleta leva ~3 h e o Actions pode atrasar o início).
+# Os contratos do PNCP mudam toda semana; a base de CNPJ da Receita, uma vez por mês.
 on:
   schedule:
-    - cron: "23 12 * * 1"
+    - cron: "23 9 * * 0"
   workflow_dispatch: {}
 
 permissions:
