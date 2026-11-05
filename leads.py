@@ -89,6 +89,9 @@ def baixar(url: str, destino: Path, cfg: dict, auth: str | None = None) -> None:
             with _abrir(url, cfg, auth=auth) as r, open(destino, "wb") as f:
                 while bloco := r.read(1 << 20):
                     f.write(bloco)
+            # o servidor da Receita às vezes corta a transferência sem erro: zip truncado
+            if destino.suffix == ".zip" and not zipfile.is_zipfile(destino):
+                raise OSError(f"zip incompleto ({destino.stat().st_size / 1e6:.0f} MB)")
             return
         except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
             ultimo = f"{type(e).__name__}: {e}"
@@ -305,7 +308,8 @@ def baixar_contratos(lic: dict, hoje: date) -> tuple[list[dict], dict]:
                     break
                 except (urllib.error.URLError, TimeoutError, ConnectionError, OSError, json.JSONDecodeError) as e:
                     log(f"  contratos {dia} p{pagina}: {type(e).__name__}: {e} (tentativa {tentativa + 1})")
-                    time.sleep(min(60, 5 * 3 ** tentativa))
+                    limite = getattr(e, "code", None) == 429  # PNCP limita requisições: esperar mais
+                    time.sleep(30 * (tentativa + 1) if limite else min(60, 5 * 3 ** tentativa))
             info["paginas"] += 1
             if dados is None:
                 info["falhas"] += 1
