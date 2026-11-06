@@ -135,7 +135,9 @@ excluir = ["fornecimento de energia", "consumo de energia", "energia eletrica co
            "locacao", "veiculo*", "combustive*", "eletrodomestic*", "eletronicos",
            "medicament*", "alimenta*", "vigilancia", "limpeza", "telefonia", "internet", "software",
            "evento*", "festa*", "festivida*", "show*", "palco*", "sonorizac*", "natal*", "carnaval", "decoracao",
-           "bancari*", "ar condicionado", "ar-condicionado", "climatiz*", "refrigerac*", "elevador*"]
+           "bancari*", "ar condicionado", "ar-condicionado", "climatiz*", "refrigerac*", "elevador*",
+           "aquisicao de", "aquisicao e entrega", "futura aquisicao", "material eletrico", "materiais eletricos",
+           "materiais de construcao", "insumos", "fornecimento e distribuicao", "impermeabiliza*"]
 [licitacoes.segmento]
 rotulo = "Venceu licitação"
 atividade = "obras e serviços públicos"
