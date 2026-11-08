@@ -1,0 +1,47 @@
+{
+  "geradoEm": "2026-11-08T15:59:44-03:00",
+  "fonte": "https://arquivos.receitafederal.gov.br/public.php/dav/files/YggdBLfdninEJX9/2026-10/",
+  "totalAprovadas": 15284,
+  "noPainel": 2451,
+  "porUf": {
+    "SP": 8553,
+    "PR": 3915,
+    "SC": 2816
+  },
+  "porSegmento": {
+    "Instalação elétrica": 3436,
+    "Advocacia (perícia)": 2985,
+    "Construtora": 2900,
+    "Engenharia": 2799,
+    "Climatização": 1106,
+    "Arquitetura": 1038,
+    "Montagem industrial": 898,
+    "Venceu licitação": 51,
+    "Redes de energia": 45,
+    "Iluminação e sinalização": 26
+  },
+  "porTrilha": {
+    "licitacao": 51,
+    "pericia": 800,
+    "projeto": 1600
+  },
+  "licitacoes": {
+    "paginas": 335,
+    "falhas": 0,
+    "truncado": false,
+    "contratos_lidos": 157195,
+    "empresas_com_sinal": 423
+  },
+  "etapas": {
+    "estabelecimentos_lidos": 73809386,
+    "cnae_ativos": 454237,
+    "sem_celular": 144619,
+    "muito_novos": 274166,
+    "fora_do_simples": 11494,
+    "mei": 8434,
+    "aprovadas": 15284,
+    "aprovadas_licitacao": 51,
+    "aprovadas_pericia": 2985,
+    "aprovadas_projeto": 12248
+  }
+}
