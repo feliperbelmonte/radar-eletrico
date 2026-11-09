@@ -62,6 +62,8 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 
 ## Histórico
 
+- 2026-11-09: trilha licitação voltou à abordagem inicial genérica (os 3 textos de projeto, sem citar contrato/órgão): modelos `trilha = "licitacao"` removidos do `prospeccao.toml` (`modelos_da_trilha` cai nos de projeto); painel publicado já com as 51 mensagens trocadas.
+
 - 2026-11-05: novo foco da prospecção (docs/foco-2026-11-05.md): Simples Nacional, ME+, 10+ anos; trilhas `licitacao` (contratos PNCP, `--contratos` para testes), `pericia` (advocacia) e `projeto`, com textos e cota diária por trilha (`[fila]`); aba "Demandas em plataformas" (coleção `demandas`) alimentada pela tarefa `trig_01YF5Y5vQwziDM2dueEhNnf3`; skills `prospeccao-pericia` e `prospeccao-plataformas`.
 
 - 2026-10-30: painel ganhou a aba "Fila de hoje" (15 novas + follow-ups vencidos, campo `followupEm`); tarefa `trig_01MFZpZoBARsPm33RxiFzMc5` manda push da fila seg–sex 08h37; check-in dos retornos na conversa do Felipe seg–sex 17h47. Detalhes em `docs/automacao-whatsapp.md`.

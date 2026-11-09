@@ -114,7 +114,7 @@ ufs = ["PR", "SC", "SP"]
 
 # ---------------------------------------------------------------------------
 # Trilha "licitacao": empresas que assinaram contrato público recente na área elétrica
-# (API de contratos do PNCP). A mensagem cita o contrato e oferece reforço técnico/documental.
+# (API de contratos do PNCP). A mensagem é a genérica de projeto (não cita o contrato).
 # ---------------------------------------------------------------------------
 [licitacoes]
 ativo = true
@@ -159,8 +159,8 @@ nome = "Felipe"
 registro = "CREA-PR"
 
 # Modelos de mensagem. Cada empresa recebe sempre o mesmo modelo da sua trilha (sorteado pelo CNPJ),
-# para variar o texto entre contatos. Campos: {nome} {registro} {empresa} {cidade} {atividade};
-# na trilha licitacao também {orgao} e {objeto}. Sem "trilha" = projeto.
+# para variar o texto entre contatos. Campos: {nome} {registro} {empresa} {cidade} {atividade}
+# ({orgao} e {objeto} também existem na trilha licitacao). Sem "trilha" = projeto; trilha sem modelos usa os de projeto.
 [[mensagem]]
 texto = "Oi, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Vi que a {empresa} trabalha com {atividade} em {cidade}. Faço só a parte de projeto elétrico (residencial, comercial e industrial, SPDA, laudos, subestação e ART), à distância, para empresas que preferem terceirizar isso ou precisam de reforço quando a demanda aperta. Vocês costumam precisar de projeto elétrico em algum serviço? Se não fizer sentido, é só me avisar que não mando mais."
 
@@ -184,11 +184,6 @@ texto = "Bom dia! Sou o {nome}, engenheiro eletricista ({registro}). Encontrei o
 trilha = "pericia"
 texto = "Olá! Aqui é o {nome}, engenheiro eletricista ({registro}). Faço laudos técnicos e atuo como assistente técnico em ações que dependem de prova técnica na área elétrica (danos elétricos, incêndio, instalações fora de norma, energia solar, medição e TOI da concessionária). Vi que o {empresa} atua em {cidade}: vocês costumam ter demandas assim? Se não fizer sentido, é só me falar."
 
-# --- Licitação (venceu contrato público recente na área).
-[[mensagem]]
-trilha = "licitacao"
-texto = "Oi, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Vi no PNCP o contrato da {empresa} com {orgao} ({objeto}). Se precisarem de reforço na parte técnica para cumprir os prazos, como projeto executivo, as built, memorial, ART ou documentação para medição e aprovação na concessionária, faço isso à distância, por demanda, sem custo fixo. Posso ajudar? Se não fizer sentido, me avisa que não mando mais."
+# --- Licitação: sem modelos próprios; usa os textos genéricos de projeto acima (pedido do Felipe,
+# 09/11/2026: abordagem inicial genérica, sem citar o contrato/órgão).
 
-[[mensagem]]
-trilha = "licitacao"
-texto = "Olá! Sou o {nome}, engenheiro eletricista ({registro}). Vi que a {empresa} assinou contrato com {orgao} ({objeto}). Trabalho só com a parte de engenharia (projetos, as built, laudos, ART e documentação técnica), como braço extra para quem está com a equipe tomada pela execução. Se algum documento estiver apertado no prazo, posso assumir. Faz sentido conversarmos? Se não, me avisa que não incomodo mais."

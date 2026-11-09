@@ -167,8 +167,10 @@ class TestPipeline(unittest.TestCase):
                                              "Traco Arq", "Luz Forte"})
             vence = por_nome["Construtora Vence"]
             self.assertEqual((vence["trilha"], vence["segmento"]), ("licitacao", "Venceu licitação"))
-            self.assertIn("Municipio de Ponta Grossa", vence["mensagem"])
-            self.assertIn("iluminação pública", vence["mensagem"])
+            # abordagem inicial genérica (de projeto): não cita o contrato nem o órgão
+            self.assertNotIn("Municipio de Ponta Grossa", vence["mensagem"])
+            self.assertNotIn("iluminação pública", vence["mensagem"])
+            self.assertIn("projeto", vence["mensagem"])
             self.assertEqual(vence["sinal"]["assinatura"], "21/10/2026")
             adv = por_nome["Silva Advogados"]
             self.assertEqual(adv["trilha"], "pericia")
