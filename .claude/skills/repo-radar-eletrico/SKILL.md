@@ -27,6 +27,7 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 | `prospeccao.toml` | **Mudar o público da prospecção**: CNAEs, porte, MEI, UFs, prioridade, mensagens |
 | `leads.py`, `prospeccao/template.html`, `.github/workflows/leads.yml`, `tests/test_leads.py` | Prospecção de empresas (ver seção própria) |
 | `prospeccao/triagem.py`, `prospeccao/triagem-whatsapp.md`, `tests/test_triagem.py` | Triagem diária das conversas do WhatsApp Web (roteiro + script que monta a lista e os lotes de gravação) |
+| `prospeccao/envio.py`, `prospeccao/envio-whatsapp.md`, `tests/test_envio.py` | Abrir no Chrome do Felipe as conversas novas do dia com a mensagem na caixa (ele só dá Enter); `fila` repete a regra da "Fila de hoje" do painel |
 | `docs/` | Histórico de decisões: `automacao-whatsapp.md` (rotina diária), `foco-2026-11-05.md` (filtros e trilhas) |
 
 ## Prospecção de empresas (leads)
@@ -62,6 +63,8 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 - Datas do PNCP vêm sem fuso: tratadas como horário de Brasília (UTC-3).
 
 ## Histórico
+
+- 2026-11-10: envio "só Enter" pelo Chrome (pedido do Felipe): tarefa sob demanda "Prospecção Elétrica — abrir conversas do dia", vinculada ao computador dele, abre web.whatsapp.com/send?phone=…&text=… uma empresa por vez, espera ele enviar e marca "contatado" no banco. Só empresas novas (ele não quer voltar a falar com quem já foi contatado). Roteiro `prospeccao/envio-whatsapp.md`, script `prospeccao/envio.py`.
 
 - 2026-11-10: mensagem inicial trocada (escolha do Felipe): um texto só, aberto, sem listar serviços e sem "faço só projeto", fechando com "Se no momento não for o caso, sem problema!" (ele achou "não mando mais" ofensivo). `{saudacao}` vira Bom dia/Boa tarde/Boa noite no painel na hora do envio. `[[mensagem]]` aceita `id` (este é o modelo 4; 1–3 eram os antigos, ~1 resposta em 80). Painel publicado já com as 1.605 empresas ainda não contatadas no texto novo; perícia mantém os textos próprios. Follow-up (`FOLLOWUP_TEXTO`) e retomada do contato futuro (`RETOMAR_TEXTO`) no mesmo tom, com `{saudacao}`.
 

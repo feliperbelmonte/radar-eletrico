@@ -38,6 +38,9 @@ Plano original:
 ### Fase 1b — Triagem diária das respostas — IMPLANTADA em 10/11/2026
 Decisão do Felipe (10/11/2026): a Claude confere o WhatsApp todo dia e deixa sugestões no painel (respondeu, qualificado, contato futuro, descartar, mandar nova mensagem, com rascunho); ele aceita ou ignora e envia com Enter pelo botão "Responder no WhatsApp". Para gastar menos tokens, a rotina lê primeiro `prospeccao/triagem-whatsapp.md` e usa `prospeccao/triagem.py`. Só leitura no WhatsApp Web; nunca digita nem envia. Substitui o check-in das 17h47 por conversa.
 
+### Fase 1c — Envio "só Enter" pelo Chrome — 10/11/2026
+Decisão do Felipe: a Claude abre no Chrome dele (Claude in Chrome + WhatsApp Web) cada conversa nova do dia com a mensagem já na caixa; ele só aperta Enter. Continua sendo envio manual (o toque é dele), uma empresa por vez, dentro da cota diária. Só empresas nunca contatadas. Roteiro `prospeccao/envio-whatsapp.md`.
+
 ### Fase 2 — Número dedicado (ação do Felipe, uma vez)
 - Chip separado só para a prospecção, com o **WhatsApp Business** (app, grátis). Se der problema, o número pessoal fica intacto.
 - Perfil completo: nome "Felipe Belmonte — Projetos Elétricos", foto, descrição curta, e-mail, catálogo com os serviços (projeto elétrico BT/MT, SPDA, laudo, fotovoltaico, subestação).
