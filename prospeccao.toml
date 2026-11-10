@@ -161,14 +161,13 @@ registro = "CREA-PR"
 # Modelos de mensagem. Cada empresa recebe sempre o mesmo modelo da sua trilha (sorteado pelo CNPJ),
 # para variar o texto entre contatos. Campos: {nome} {registro} {empresa} {cidade} {atividade}
 # ({orgao} e {objeto} também existem na trilha licitacao). Sem "trilha" = projeto; trilha sem modelos usa os de projeto.
+# Texto escolhido pelo Felipe em 10/11/2026 (aberto, sem listar serviços, fechamento leve).
+# Os 3 textos anteriores (modelos 1-3, longos e com lista de serviços) tiveram ~1 resposta em 80.
+# {saudacao} vira "Bom dia"/"Boa tarde"/"Boa noite" no painel, na hora do envio (horário de Brasília).
+# "id" fixa o número do modelo gravado no banco (para comparar textos na revisão do funil).
 [[mensagem]]
-texto = "Oi, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Vi que a {empresa} trabalha com {atividade} em {cidade}. Faço só a parte de projeto elétrico (residencial, comercial e industrial, SPDA, laudos, subestação e ART), à distância, para empresas que preferem terceirizar isso ou precisam de reforço quando a demanda aperta. Vocês costumam precisar de projeto elétrico em algum serviço? Se não fizer sentido, é só me avisar que não mando mais."
-
-[[mensagem]]
-texto = "Olá! Meu nome é {nome}, sou engenheiro eletricista ({registro}). Encontrei a {empresa} pesquisando empresas de {atividade} em {cidade}. Trabalho só com projeto elétrico (de residência a indústria, SPDA, laudos e ART), sem concorrer na execução. Se em algum momento vocês precisarem terceirizar projeto, posso ajudar. Faz sentido conversarmos? Se não, me avisa que não incomodo mais."
-
-[[mensagem]]
-texto = "Oi, tudo certo? Sou o {nome}, engenheiro eletricista ({registro}). Vi a {empresa} em {cidade} e queria me apresentar: faço projetos elétricos, laudos e ART para empresas que precisam de um engenheiro eletricista nessa parte, sem custo fixo, cobrando por projeto. Hoje vocês têm alguém que faz isso ou costumam terceirizar? Se não for o caso, é só me falar."
+id = 4
+texto = "{saudacao}, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). Estou me apresentando para algumas empresas de {atividade} em {cidade}, e a {empresa} foi uma delas. Vocês costumam precisar de engenheiro eletricista em algum serviço? Se no momento não for o caso, sem problema!"
 
 # --- Perícia (escritórios de advocacia). Só temas de engenharia elétrica: NÃO oferecer perícia de
 # periculosidade/insalubridade (CLT art. 195: exclusiva de engenheiro ou médico do trabalho).

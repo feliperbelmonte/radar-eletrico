@@ -63,6 +63,8 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 
 ## Histórico
 
+- 2026-11-10: mensagem inicial trocada (escolha do Felipe): um texto só, aberto, sem listar serviços e sem "faço só projeto", fechando com "Se no momento não for o caso, sem problema!" (ele achou "não mando mais" ofensivo). `{saudacao}` vira Bom dia/Boa tarde/Boa noite no painel na hora do envio. `[[mensagem]]` aceita `id` (este é o modelo 4; 1–3 eram os antigos, ~1 resposta em 80). Painel publicado já com as 1.605 empresas ainda não contatadas no texto novo; perícia mantém os textos próprios.
+
 - 2026-11-10: triagem diária do WhatsApp (decisão do Felipe: "caminho fechado", sugestões no painel, ele aceita): tarefa seg–sex 17h41 com o computador dele (Claude in Chrome + WhatsApp Web), roteiro `prospeccao/triagem-whatsapp.md` lido antes de tudo e `prospeccao/triagem.py` para economizar tokens. Painel ganhou status "Contato futuro" (data de retomada, volta na Fila de hoje) e a seção "Triagem do WhatsApp" com Aceitar/Ignorar/Responder no WhatsApp. Números das 38 empresas contatadas que ainda estavam na lista foram copiados para o banco; as que já tinham saído da lista são buscadas pelo nome no WhatsApp Web.
 
 - 2026-11-09: trilha licitação voltou à abordagem inicial genérica (os 3 textos de projeto, sem citar contrato/órgão): modelos `trilha = "licitacao"` removidos do `prospeccao.toml` (`modelos_da_trilha` cai nos de projeto); painel publicado já com as 51 mensagens trocadas.

@@ -170,7 +170,8 @@ class TestPipeline(unittest.TestCase):
             # abordagem inicial genérica (de projeto): não cita o contrato nem o órgão
             self.assertNotIn("Municipio de Ponta Grossa", vence["mensagem"])
             self.assertNotIn("iluminação pública", vence["mensagem"])
-            self.assertIn("projeto", vence["mensagem"])
+            self.assertIn("engenheiro eletricista", vence["mensagem"])
+            self.assertTrue(vence["mensagem"].startswith("{saudacao}, tudo bem?"))
             self.assertEqual(vence["sinal"]["assinatura"], "21/10/2026")
             adv = por_nome["Silva Advogados"]
             self.assertEqual(adv["trilha"], "pericia")
@@ -180,7 +181,7 @@ class TestPipeline(unittest.TestCase):
             self.assertEqual(carlos["celular"], "41988880002")  # matriz, não a filial
             self.assertIn("instalações elétricas", carlos["mensagem"])
             self.assertIn("const FILA = {", painel)
-            self.assertTrue(all(1 <= l["modelo"] <= 3 for l in dados))
+            self.assertTrue(all(isinstance(l["modelo"], int) and l["modelo"] >= 1 for l in dados))
             resumo = json.loads((saida / "resumo.json").read_text(encoding="utf-8"))
             self.assertNotIn("41988880002", json.dumps(resumo))  # resumo sem contato
 

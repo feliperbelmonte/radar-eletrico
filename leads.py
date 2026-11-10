@@ -235,7 +235,7 @@ def montar_mensagem(modelos: list[str], remetente: dict, empresa: str, cidade: s
                     atividade: str = "instalações elétricas") -> str:
     i = modelo_de(cnpj, len(modelos))
     return modelos[i].format(nome=remetente["nome"], registro=remetente["registro"], empresa=empresa,
-                             cidade=cidade, atividade=atividade)
+                             cidade=cidade, atividade=atividade, saudacao="{saudacao}")
 
 
 # ---------------------------------------------------------------- contratos do PNCP (trilha licitacao)
@@ -521,21 +521,26 @@ def priorizar(empresas: list[dict], cfg: dict) -> list[dict]:
     return sorted(empresas, key=chave)
 
 
+def mensagens_da_trilha(cfg: dict, trilha: str) -> list[dict]:
+    ms = [m for m in cfg["mensagem"] if m.get("trilha", "projeto") == trilha]
+    return ms or [m for m in cfg["mensagem"] if m.get("trilha", "projeto") == "projeto"]
+
+
 def modelos_da_trilha(cfg: dict, trilha: str) -> list[str]:
-    modelos = [m["texto"] for m in cfg["mensagem"] if m.get("trilha", "projeto") == trilha]
-    return modelos or [m["texto"] for m in cfg["mensagem"] if m.get("trilha", "projeto") == "projeto"]
+    return [m["texto"] for m in mensagens_da_trilha(cfg, trilha)]
 
 
 def para_painel(e: dict, cfg: dict) -> dict:
     empresa = nome_empresa(e.get("fantasia", ""), e.get("razao", ""))
     cidade = titulo(e["cidade"])
     seg = cfg["segmento"][e["segmento"]] if e["segmento"] is not None else cfg["licitacoes"]["segmento"]
-    modelos = modelos_da_trilha(cfg, e["trilha"])
+    msgs = mensagens_da_trilha(cfg, e["trilha"])
+    modelos = [m["texto"] for m in msgs]
     sinal = e.get("sinal") or {}
     i = modelo_de(e["cnpj"], len(modelos))
     msg = modelos[i].format(nome=cfg["remetente"]["nome"], registro=cfg["remetente"]["registro"], empresa=empresa,
                             cidade=cidade, atividade=seg["atividade"], orgao=sinal.get("orgao", ""),
-                            objeto=sinal.get("objeto", ""))
+                            objeto=sinal.get("objeto", ""), saudacao="{saudacao}")
     rotulo = cfg["licitacoes"]["segmento"]["rotulo"] if e["trilha"] == "licitacao" else seg["rotulo"]
     extra = {}
     if sinal:
@@ -558,7 +563,7 @@ def para_painel(e: dict, cfg: dict) -> dict:
         "celular": e["celular"],
         "email": e["email"],
         "mensagem": msg,
-        "modelo": i + 1,  # dentro da trilha: para medir qual texto responde melhor
+        "modelo": msgs[i].get("id", i + 1),  # para medir qual texto responde melhor
     }
 
 

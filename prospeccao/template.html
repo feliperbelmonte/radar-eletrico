@@ -250,7 +250,10 @@ const salvarFiltro = () => { try { localStorage.setItem("prosp-filtros", JSON.st
 Object.assign(estado, lerFiltro());
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const linkWa = (l, texto) => `https://wa.me/55${l.celular}?text=${encodeURIComponent(texto || l.mensagem)}`;
+// "{saudacao}" no texto vira Bom dia / Boa tarde / Boa noite na hora (horário de Brasília)
+const saudacao = () => { const h = Number(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo", hour: "numeric", hourCycle: "h23" })); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; };
+const comSaudacao = (t) => String(t || "").replace(/\{saudacao\}/g, saudacao());
+const linkWa = (l, texto) => `https://wa.me/55${l.celular}?text=${encodeURIComponent(comSaudacao(texto || l.mensagem))}`;
 const fone = (n) => n.length === 11 ? `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}` : n;
 const statusDe = (l) => (marcas[l.cnpj] && marcas[l.cnpj].status) || "a_contatar";
 const diaBR = (d) => new Date(d).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
@@ -344,7 +347,7 @@ function cartao(l, tipo) {
   const st = statusDe(l);
   const fu = tipo === "fu", ret = tipo === "ret", tri = tipo === "tri";
   const sg = triagens[l.cnpj] || null;
-  const texto = fu ? FOLLOWUP_TEXTO : ret ? ((sg && sg.rascunho) || RETOMAR_TEXTO) : l.mensagem;
+  const texto = comSaudacao(fu ? FOLLOWUP_TEXTO : ret ? ((sg && sg.rascunho) || RETOMAR_TEXTO) : l.mensagem);
   const feito = tri ? false : fu ? !!m.followupEm : ret ? false : st !== "a_contatar";
   const quando = m.quando ? new Date(m.quando).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
   const desde = m.contatadoEm ? new Date(m.contatadoEm).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" }) : "";
@@ -524,7 +527,7 @@ lista.addEventListener("click", async (e) => {
   if (alvo.dataset.acao === "copiar") {
     const tp = alvo.closest(".card").dataset.tipo;
     const texto = tp === "fu" ? FOLLOWUP_TEXTO : tp === "ret" ? ((triagens[cnpj] || {}).rascunho || RETOMAR_TEXTO) : lead.mensagem;
-    try { await navigator.clipboard.writeText(texto); alvo.textContent = "Copiada"; }
+    try { await navigator.clipboard.writeText(comSaudacao(texto)); alvo.textContent = "Copiada"; }
     catch { const d = alvo.closest(".card").querySelector("details"); d.open = true; alvo.textContent = "Selecione o texto"; }
     setTimeout(() => { alvo.textContent = "Copiar mensagem"; }, 1800);
   }
