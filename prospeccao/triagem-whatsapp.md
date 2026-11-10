@@ -52,4 +52,5 @@
 ## Lições (atualize aqui, não no prompt da tarefa)
 
 <!-- - AAAA-MM-DD — o que mudou e por quê -->
-- 2026-11-10 — roteiro criado; primeira execução ainda não feita.
+- 2026-11-10 — roteiro criado.
+- 2026-11-10 — 1ª execução agendada falhou: rodou só na nuvem, sem ferramentas `mcp__claude-in-chrome__*`. A tarefa precisa de "Require this computer" ligado no app desktop. Sem essas ferramentas no início, notifique e encerre antes de baixar dados.
