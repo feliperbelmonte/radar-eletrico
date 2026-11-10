@@ -28,7 +28,8 @@
       - Se o Felipe fechar a aba ou o Chrome parar de responder: encerre e vá ao passo 6.
 4. Entre uma empresa e outra não precisa esperar além do carregamento.
 5. **Marcar no painel:** `python prospeccao/envio.py marcar --painel <index.html> --status <pasta>/db/status --cnpj <cnpj> --saida <pasta>/marcar` → imprime `doc_id` e `file_path`. Grave com `ArtifactData` action `set`, coleção `status`, esse `doc_id` e `file_path`. Se `existe` for true (ou o set for recusado por versão), faça `get` do documento e repita o `set` com `if_version` = a versão lida.
-6. **Fim** (PushNotification, uma linha): "Prospecção [dia/mês]: <x> enviadas de <n>. <y> sem WhatsApp, <z> não enviadas (ficam para amanhã). Painel: https://claude.ai/artifact/BAJojSBRshrr1MRC4Eoujg"
+6. **Varredura (pedido do Felipe, 10/11/2026):** com o mesmo WhatsApp Web aberto, faça a triagem do dia seguindo `prospeccao/triagem-whatsapp.md` do passo 1 ao 4 (baixe de novo a coleção `status`, porque ela mudou com os envios; reaproveite o `index.html`). Ela classifica no controle: sem interesse → descartado, "vou deixar anotado" → contato futuro em 30 dias, sem resposta em 5 dias úteis → sem resposta.
+7. **Fim** (PushNotification, uma notificação só): "Prospecção [dia/mês]: <x> enviadas de <n> (<y> sem WhatsApp, <z> não enviadas). Triagem: <resumo do triagem.py gravar>. Destaque: <empresa — motivo>. Painel: https://claude.ai/artifact/BAJojSBRshrr1MRC4Eoujg"
 
 ## Lições (atualize aqui)
 

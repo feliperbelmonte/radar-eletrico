@@ -6,7 +6,9 @@ Faz a parte mecânica para a Claude gastar tokens só lendo as conversas:
   lista   → cruza o painel (telefones) com o banco (status/triagem) e imprime, enxuto,
             quem conferir no WhatsApp Web hoje e a sugestão padrão de cada um.
   gravar  → valida os achados da Claude (JSON) e monta os arquivos para o ArtifactData
-            "batch" na coleção "triagem" (só documentos novos: nunca altera status).
+            "batch" na coleção "triagem" (só documentos novos). Cada documento leva auto: true e "de"
+            (o status visto): o painel aplica a classificação no status ao abrir (decisão do Felipe,
+            10/11/2026), sem precisar de versão de documento aqui.
 
 Uso:
   python prospeccao/triagem.py lista  --painel painel.html --status DIR --triagem DIR [--hoje AAAA-MM-DD]
@@ -24,11 +26,10 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 BRT = timezone(timedelta(hours=-3))
-ATIVOS = ("contatado", "respondeu", "qualificado", "proposta")   # conversas em andamento
-SUGERIVEIS = ("contatado", "respondeu", "qualificado", "proposta", "cliente", "futuro", "sem_interesse")
-DIAS_SILENCIO = 10      # dias úteis depois do follow-up sem resposta → sugestão padrão
-DIAS_FUTURO = 60        # retomada padrão de quem pediu "mais pra frente"
-DIAS_FUTURO_SILENCIO = 90
+ATIVOS = ("contatado", "respondeu", "qualificado", "proposta", "futuro", "sem_resposta")   # conversas a vigiar (resposta tardia também conta)
+SUGERIVEIS = ("contatado", "respondeu", "qualificado", "proposta", "cliente", "futuro", "sem_interesse", "sem_resposta")
+DIAS_SEM_RESPOSTA = 5   # dias úteis sem resposta depois do contato (ou da retomada) → "sem_resposta"
+DIAS_FUTURO = 30        # "vou deixar anotado"/"mais pra frente" → nova mensagem depois de 30 dias
 MAX_RASCUNHO = 600
 MAX_LOTE = 50
 
@@ -107,15 +108,13 @@ def ultima_vista(triagem: dict[str, dict]) -> dict[str, str]:
 
 # ---------- regra padrão (sem ler a conversa) ----------
 def sugestao_padrao(m: dict, hoje: date) -> dict | None:
+    """Sem resposta em 5 dias úteis depois do último envio nosso (contato ou retomada) → declinar."""
     if m.get("status") != "contatado":
         return None
-    fu = dia_brt(m.get("followupEm"))
-    if not fu or dias_uteis(fu, hoje) < DIAS_SILENCIO:
+    base = dia_brt(m.get("retomadoEm")) or dia_brt(m.get("contatadoEm"))
+    if not base or dias_uteis(base, hoje) < DIAS_SEM_RESPOSTA:
         return None
-    if m.get("retomadoEm"):
-        return {"status": "sem_interesse", "motivo": "Sem resposta nem depois da retomada: encerrar."}
-    return {"status": "futuro", "retomarEm": (hoje + timedelta(days=DIAS_FUTURO_SILENCIO)).isoformat(),
-            "motivo": f"Sem resposta {DIAS_SILENCIO}+ dias úteis depois do follow-up: tentar uma vez daqui a 3 meses."}
+    return {"status": "sem_resposta", "motivo": f"Sem resposta em {DIAS_SEM_RESPOSTA} dias úteis."}
 
 
 def montar_lista(leads: dict, status: dict, triagem: dict, hoje: date) -> tuple[list[dict], dict]:
@@ -140,7 +139,7 @@ def montar_lista(leads: dict, status: dict, triagem: dict, hoje: date) -> tuple[
             "jaVista": vista.get(cnpj, ""), "padrao": sugestao_padrao(m, hoje),
         })
     # quem tem conversa mais quente primeiro, depois os mais antigos
-    peso = {"proposta": 0, "qualificado": 1, "respondeu": 2, "contatado": 3}
+    peso = {"proposta": 0, "qualificado": 1, "respondeu": 2, "contatado": 3, "futuro": 4, "sem_resposta": 5}
     itens.sort(key=lambda i: (peso[i["status"]], status[i["cnpj"]].get("contatadoEm", "")))
     cont["conferir"] = len(itens)
     return itens, cont
@@ -156,7 +155,7 @@ def limpar(txt: str | None, n: int) -> str:
     return t[:n]
 
 
-def validar(a: dict, leads: dict, hoje: date) -> tuple[dict | None, str | None]:
+def validar(a: dict, leads: dict, hoje: date, status: dict | None = None) -> tuple[dict | None, str | None]:
     cnpj = re.sub(r"\D", "", str(a.get("cnpj", "")))
     if cnpj not in leads:
         return None, f"{cnpj or '?'}: CNPJ fora do painel e do banco"
@@ -164,7 +163,8 @@ def validar(a: dict, leads: dict, hoje: date) -> tuple[dict | None, str | None]:
     if st not in SUGERIVEIS:
         return None, f"{cnpj}: status inválido {st!r}"
     d = {"cnpj": cnpj, "empresa": leads[cnpj].get("empresa", ""), "status": st,
-         "motivo": limpar(a.get("motivo"), 300)}
+         "motivo": limpar(a.get("motivo"), 300), "auto": True,
+         "de": (status or {}).get(cnpj, {}).get("status", "a_contatar")}
     if not d["motivo"]:
         return None, f"{cnpj}: falta o motivo"
     if a.get("rascunho"):
@@ -181,13 +181,14 @@ def validar(a: dict, leads: dict, hoje: date) -> tuple[dict | None, str | None]:
     return d, None
 
 
-def montar_gravacao(achados: list[dict], leads: dict, agora: datetime, saida: Path) -> tuple[list[list[dict]], list[str], dict]:
+def montar_gravacao(achados: list[dict], leads: dict, agora: datetime, saida: Path,
+                    status: dict | None = None) -> tuple[list[list[dict]], list[str], dict]:
     hoje = agora.astimezone(BRT).date()
     carimbo = agora.astimezone(BRT).strftime("%Y%m%d%H%M")
     saida.mkdir(parents=True, exist_ok=True)
     writes, erros, cont, vistos = [], [], {}, set()
     for a in achados:
-        d, err = validar(a, leads, hoje)
+        d, err = validar(a, leads, hoje, status)
         if err:
             erros.append(err)
             continue
@@ -210,7 +211,8 @@ def montar_gravacao(achados: list[dict], leads: dict, agora: datetime, saida: Pa
 
 def resumo_notificacao(cont: dict) -> str:
     rot = {"respondeu": "responderam", "qualificado": "qualificadas", "proposta": "em proposta", "cliente": "clientes",
-           "futuro": "para contato futuro", "sem_interesse": "para descartar", "contatado": "com nova mensagem sugerida"}
+           "futuro": "para contato futuro (30 dias)", "sem_interesse": "descartadas (sem interesse)",
+           "sem_resposta": "sem resposta em 5 dias úteis", "contatado": "com nova mensagem sugerida"}
     partes = [f"{n} {rot[k]}" for k, n in sorted(cont.items(), key=lambda x: -x[1]) if n]
     return ", ".join(partes) if partes else "nenhuma novidade"
 
@@ -227,7 +229,7 @@ def main(argv: list[str] | None = None) -> int:
     a1.add_argument("--json", action="store_true", help="saída em JSON em vez de linhas")
     a2 = sub.add_parser("gravar")
     a2.add_argument("--painel", type=Path, required=True)
-    a2.add_argument("--status", type=Path, help="pasta da coleção status (aceita empresas que saíram da lista semanal)")
+    a2.add_argument("--status", type=Path, required=True, help="pasta da coleção status")
     a2.add_argument("--achados", type=Path, required=True)
     a2.add_argument("--saida", type=Path, required=True)
     a2.add_argument("--agora")
@@ -256,9 +258,10 @@ def main(argv: list[str] | None = None) -> int:
     achados = json.loads(a.achados.read_text(encoding="utf-8"))
     if isinstance(achados, dict):
         achados = achados.get("achados", [])
-    for c, m in ler_colecao(getattr(a, "status", None)).items():
+    status = ler_colecao(a.status)
+    for c, m in status.items():
         leads.setdefault(c, {"cnpj": c, "empresa": m.get("empresa", "")})
-    lotes, erros, cont = montar_gravacao(achados, leads, agora, a.saida)
+    lotes, erros, cont = montar_gravacao(achados, leads, agora, a.saida, status)
     for e in erros:
         print("ERRO", e, file=sys.stderr)
     print(json.dumps({"lotes": [str((a.saida / f"lote{n}.json").resolve()) for n in range(1, len(lotes) + 1)],

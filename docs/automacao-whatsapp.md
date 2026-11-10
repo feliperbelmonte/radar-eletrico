@@ -41,6 +41,9 @@ Decisão do Felipe (10/11/2026): a Claude confere o WhatsApp todo dia e deixa su
 ### Fase 1c — Envio "só Enter" pelo Chrome — 10/11/2026
 Decisão do Felipe: a Claude abre no Chrome dele (Claude in Chrome + WhatsApp Web) cada conversa nova do dia com a mensagem já na caixa; ele só aperta Enter. Continua sendo envio manual (o toque é dele), uma empresa por vez, dentro da cota diária. Só empresas nunca contatadas. Roteiro `prospeccao/envio-whatsapp.md`.
 
+### Regras de classificação — 10/11/2026
+Pedido do Felipe: no fim de cada envio a Claude varre as conversas e classifica direto no controle. Sem interesse → descartado (`sem_interesse`); "vou deixar anotado" → contato futuro, nova mensagem depois de 30 dias (`futuro`); sem resposta em 5 dias úteis → declinado (`sem_resposta`), sem follow-up.
+
 ### Fase 2 — Número dedicado (ação do Felipe, uma vez)
 - Chip separado só para a prospecção, com o **WhatsApp Business** (app, grátis). Se der problema, o número pessoal fica intacto.
 - Perfil completo: nome "Felipe Belmonte — Projetos Elétricos", foto, descrição curta, e-mail, catálogo com os serviços (projeto elétrico BT/MT, SPDA, laudo, fotovoltaico, subestação).

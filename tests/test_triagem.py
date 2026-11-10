@@ -47,11 +47,11 @@ class TestTriagem(unittest.TestCase):
         self.assertEqual(fones["55555555000155"], "BUSCAR PELO NOME")
         self.assertEqual(cont2["sem_telefone"], 1)
         del status["44444444000144"], status["55555555000155"]
-        self.assertEqual(itens[1]["padrao"]["status"], "futuro")
+        self.assertEqual(itens[1]["padrao"]["status"], "sem_resposta")
         self.assertIsNone(itens[0]["padrao"])
-        status["11111111000111"]["retomadoEm"] = "2026-08-01T12:00:00Z"
+        status["11111111000111"]["retomadoEm"] = "2026-11-06T12:00:00Z"   # retomada recente: ainda aguarda
         itens, _ = t.montar_lista(self.leads, status, {}, date(2026, 11, 10))
-        self.assertEqual([i for i in itens if i["cnpj"] == "11111111000111"][0]["padrao"]["status"], "sem_interesse")
+        self.assertIsNone([i for i in itens if i["cnpj"] == "11111111000111"][0]["padrao"])
 
     def test_gravar(self):
         achados = [
@@ -62,7 +62,8 @@ class TestTriagem(unittest.TestCase):
             {"cnpj": "33333333000133", "status": "a_contatar", "motivo": "x"},
         ]
         agora = datetime(2026, 11, 10, 20, 41, tzinfo=timezone.utc)
-        lotes, erros, cont = t.montar_gravacao(achados, self.leads, agora, self.tmp / "saida")
+        lotes, erros, cont = t.montar_gravacao(achados, self.leads, agora, self.tmp / "saida",
+                                               {"11111111000111": {"status": "contatado"}})
         self.assertEqual(len(erros), 2)
         self.assertEqual(cont, {"respondeu": 1, "futuro": 1})
         w = lotes[0][0]
@@ -71,8 +72,10 @@ class TestTriagem(unittest.TestCase):
         doc = json.loads(Path(w["file_path"]).read_text(encoding="utf-8"))
         self.assertIn("[telefone]", doc["rascunho"])
         self.assertNotIn("99999-8888", doc["rascunho"])
+        self.assertTrue(doc["auto"])
+        self.assertEqual(doc["de"], "contatado")
         doc2 = json.loads(Path(lotes[0][1]["file_path"]).read_text(encoding="utf-8"))
-        self.assertEqual(doc2["retomarEm"], "2027-01-09")
+        self.assertEqual(doc2["retomarEm"], "2026-12-10")
         self.assertIn("responderam", t.resumo_notificacao(cont))
 
 

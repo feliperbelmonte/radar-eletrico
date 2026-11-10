@@ -121,6 +121,7 @@
   .badge.proposta { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
   .badge.cliente { background: var(--wa); color: var(--wa-ink); border-color: transparent; }
   .badge.sem_interesse { background: var(--crit-soft); color: var(--crit); border-color: transparent; }
+  .badge.sem_resposta { background: var(--surface-2); color: var(--crit); border-color: var(--crit); border-style: dashed; }
   .badge.pulada { background: var(--surface-2); color: var(--text-faint); border-style: dashed; }
   .badge.fu { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
   .badge.futuro { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent); border-style: dashed; }
@@ -210,11 +211,13 @@ const META_DIA = (typeof FILA === "object" && FILA.meta) || 15;
 const COTAS = { licitacao: FILA.licitacao ?? 5, pericia: FILA.pericia ?? 4, projeto: FILA.projeto ?? 6 };
 const ORDEM_TRILHAS = ["licitacao", "pericia", "projeto"];
 const trilhaDe = (l) => l.trilha || "projeto";
-// Follow-up: 1 só, depois de DIAS_FOLLOWUP dias úteis sem resposta (skill prospeccao-captacao)
+// Follow-up desligado (decisão do Felipe, 10/11/2026: não voltar a falar com quem não respondeu;
+// sem resposta em 5 dias úteis → a triagem marca "Sem resposta"). Para religar: FOLLOWUP_ATIVO = true.
+const FOLLOWUP_ATIVO = false;
 const DIAS_FOLLOWUP = 5;
 const FOLLOWUP_TEXTO = "{saudacao}, tudo bem? Só passando para retomar a mensagem que mandei semana passada. Se em algum momento vocês precisarem de engenheiro eletricista, fico à disposição. Se no momento não for o caso, sem problema!";
 // Contato futuro: volta para a Fila de hoje na data retomarEm, com este texto (ou o rascunho da triagem, se houver)
-const DIAS_FUTURO = 60;
+const DIAS_FUTURO = 30;
 const RETOMAR_TEXTO = "{saudacao}, tudo bem? Aqui é o Felipe, engenheiro eletricista. Conversamos há um tempo e passei para saber se surgiu alguma demanda em que eu possa ajudar. Se no momento não for o caso, sem problema!";
 // Etapas do funil (as skills prospeccao-* usam os mesmos nomes)
 const STATUS = [
@@ -226,6 +229,7 @@ const STATUS = [
   ["cliente", "Cliente"],
   ["futuro", "Contato futuro"],
   ["sem_interesse", "Sem interesse"],
+  ["sem_resposta", "Sem resposta"],
   ["pulada", "Pulada (não enviada)"],
 ];
 const ROTULO = Object.fromEntries(STATUS);
@@ -280,7 +284,7 @@ function filaHoje() {
     if (triagens[l.cnpj]) { triagem.push(l); continue; }
     if (statusDe(l) === "futuro" && m.retomarEm && m.retomarEm <= hoje) { retomar.push(l); continue; }
     if (m.followupEm && diaBR(m.followupEm) === hoje) fuFeito.push(l);
-    else if (statusDe(l) === "contatado" && m.contatadoEm && !m.followupEm && diasUteisDesde(m.contatadoEm) >= DIAS_FOLLOWUP) fuPend.push(l);
+    else if (FOLLOWUP_ATIVO && statusDe(l) === "contatado" && m.contatadoEm && !m.followupEm && diasUteisDesde(m.contatadoEm) >= DIAS_FOLLOWUP) fuPend.push(l);
     else if (m.contatadoEm && diaBR(m.contatadoEm) === hoje) novoFeito.push(l);
   }
   const vagas = Math.max(0, META_DIA - novoFeito.length);
@@ -363,10 +367,11 @@ function cartao(l, tipo) {
     ${l.sinal ? `<div class="sinal">Contrato com <strong>${esc(l.sinal.orgao)}</strong>${l.sinal.uf ? " (" + esc(l.sinal.uf) + ")" : ""}: ${esc(l.sinal.objeto)}${l.sinal.assinatura ? " · assinado em " + esc(l.sinal.assinatura) : ""}${l.sinal.valor ? " · " + esc(Number(l.sinal.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })) : ""}${l.sinal.link ? ` · <a href="${esc(l.sinal.link)}" target="_blank" rel="noopener">ver no PNCP</a>` : ""}</div>` : ""}
     <div class="tags"><span class="trilha ${esc(trilhaDe(l))}">${esc(ROTULO_TRILHA[trilhaDe(l)])}</span><span>${esc(l.segmento)}</span><span>${esc(l.porte)}</span>${l.desde ? `<span>desde ${esc(l.desde)}</span>` : ""}</div>
     <div class="contato">${esc(fone(l.celular))}${l.email ? " · " + esc(l.email) : ""}</div>
-    ${sg && sg.status ? `<div class="sugestao"><div><strong>Triagem do WhatsApp${sg.em ? " (" + esc(dataBR(diaBR(sg.em))) + ")" : ""}:</strong> sugiro <strong>${esc(ROTULO[sg.status] || sg.status)}</strong>${sg.status === "futuro" && sg.retomarEm ? " até " + esc(dataBR(sg.retomarEm)) : ""}. ${esc(sg.motivo || "")}</div>
+    ${sg && sg.status ? `<div class="sugestao"><div><strong>Triagem do WhatsApp${sg.em ? " (" + esc(dataBR(diaBR(sg.em))) + ")" : ""}:</strong> ${sg.aplicadoEm ? "classifiquei como" : "sugiro"} <strong>${esc(ROTULO[sg.status] || sg.status)}</strong>${sg.status === "futuro" && sg.retomarEm ? " até " + esc(dataBR(sg.retomarEm)) : ""}. ${esc(sg.motivo || "")}</div>
       ${sg.rascunho ? `<div class="rasc">Rascunho: ${esc(sg.rascunho)}</div>` : ""}
       <div class="acoes-s">${sg.rascunho && sg.status !== "futuro" ? `<a class="btn-wa" href="${esc(linkWa(l, sg.rascunho))}" target="_blank" rel="noopener">Responder no WhatsApp</a>` : ""}
-        <button class="btn" data-acao="aceitar">Aceitar sugestão</button><button class="btn" data-acao="ignorar">Ignorar</button></div></div>` : ""}
+        ${sg.aplicadoEm ? `<button class="btn" data-acao="ok">Ok, visto</button><button class="btn" data-acao="desfazer" title="Volta ao status anterior (${esc(ROTULO[sg.statusAnterior] || sg.statusAnterior || "")})">Desfazer</button>`
+          : `<button class="btn" data-acao="aceitar">Aceitar sugestão</button><button class="btn" data-acao="ignorar">Ignorar</button>`}</div></div>` : ""}
     ${tri ? "" : `<details class="msg"${tipo && !feito ? " open" : ""}><summary>${fu ? "Mensagem de follow-up" : ret ? "Mensagem de retomada" : "Ver mensagem"}</summary><p>${esc(texto)}</p></details>`}
     <div class="acoes">
       ${tri ? "" : `<a class="btn-wa" href="${esc(linkWa(l, texto))}" target="_blank" rel="noopener" data-acao="${fu ? "wa-fu" : ret ? "wa-ret" : "wa"}">${fu ? "Enviar follow-up" : ret ? "Retomar contato" : "Abrir no WhatsApp"}</a>`}
@@ -391,7 +396,7 @@ function renderHoje() {
   if (!LEADS.length) { lista.innerHTML = `<div class="vazio">Nenhuma empresa carregada ainda.</div>`; return; }
   const bloco = (titulo, pares) => pares.length ? `<div class="secao">${titulo} · ${pares.length}</div>` + pares.map(([l, t]) => cartao(l, t)).join("") : "";
   const par = (t) => (l) => [l, t];
-  lista.innerHTML = (bloco("Triagem do WhatsApp: confira as sugestões", f.triagem.map(par("tri"))) + bloco("Retomar contato", f.retomar.map(par("ret")))
+  lista.innerHTML = (bloco("Triagem do WhatsApp: responder ou conferir", f.triagem.map(par("tri"))) + bloco("Retomar contato", f.retomar.map(par("ret")))
     + bloco("Follow-up", f.fuPend.map(par("fu"))) + bloco("Novas empresas", f.novoPend.map(par("novo")))
     + bloco("Já enviadas hoje", [...f.fuFeito.map(par("fu")), ...f.novoFeito.map(par("novo"))]))
     || `<div class="vazio">Nada para hoje com esses filtros.</div>`;
@@ -468,6 +473,39 @@ async function gravar(cnpj, mudanca) {
 }
 
 // Marca como resolvidas todas as sugestões pendentes da empresa (a mais recente e as antigas)
+// Triagem automática (decisão do Felipe, 10/11/2026): a rotina grava a classificação com auto: true e o
+// painel aplica no status ao abrir, só se o status ainda for o que a rotina viu ("de"). Ficam visíveis
+// para conferência só as que pedem ação (responderam ou têm rascunho); o resto é resolvido como "auto".
+let statusCarregado = false, aplicando = false;
+const PEDE_ACAO = ["respondeu", "qualificado", "proposta", "cliente"];
+async function aplicarTriagensAuto() {
+  if (!db || !statusCarregado || aplicando) return;
+  const fila = Object.entries(triagemDocs).filter(([, d]) => d && d.auto && !d.aplicadoEm && !d.resolvido && d.cnpj && d.status);
+  if (!fila.length) return;
+  aplicando = true;
+  try {
+    for (const [id, d] of fila) {
+      const m = marcas[d.cnpj] || {};
+      const atual = m.status || "a_contatar";
+      const agora = new Date().toISOString();
+      if (d.de && d.de !== atual) {   // o Felipe mudou o status depois da triagem: não mexe
+        triagemDocs = { ...triagemDocs, [id]: { ...d, resolvido: "ignorada-mudou", resolvidoEm: agora } };
+        await db.doc("triagem/" + id).set(triagemDocs[id]);
+        continue;
+      }
+      const mud = { status: d.status, triadoEm: agora, retomarEm: d.status === "futuro" ? (d.retomarEm || somaDias(DIAS_FUTURO)) : null };
+      if (d.nota) mud.nota = ((m.nota ? m.nota + " | " : "") + d.nota).slice(-500);
+      const doc = { ...d, aplicadoEm: agora, statusAnterior: atual };
+      if (!PEDE_ACAO.includes(d.status) && !d.rascunho) { doc.resolvido = "auto"; doc.resolvidoEm = agora; }
+      triagemDocs = { ...triagemDocs, [id]: doc };
+      await gravar(d.cnpj, mud);
+      await db.doc("triagem/" + id).set(doc);
+    }
+  } catch (e) { mostrarAviso("Não consegui aplicar a triagem agora (" + (e && e.code || "erro") + ")."); }
+  aplicando = false;
+  montarTriagens(); render();
+}
+
 async function resolverTriagem(cnpj, como) {
   const agora = new Date().toISOString();
   const ids = Object.entries(triagemDocs).filter(([, d]) => d && d.cnpj === cnpj && !d.resolvido).map(([id]) => id);
@@ -524,6 +562,12 @@ lista.addEventListener("click", async (e) => {
     gravar(cnpj, mud);
   }
   if (alvo.dataset.acao === "ignorar") resolverTriagem(cnpj, "ignorada");
+  if (alvo.dataset.acao === "ok") resolverTriagem(cnpj, "vista");
+  if (alvo.dataset.acao === "desfazer") {
+    const sg = triagens[cnpj] || {};
+    resolverTriagem(cnpj, "desfeita");
+    gravar(cnpj, { status: sg.statusAnterior || "contatado", retomarEm: sg.statusAnterior === "futuro" ? ((marcas[cnpj] || {}).retomarEm || null) : null });
+  }
   if (alvo.dataset.acao === "copiar") {
     const tp = alvo.closest(".card").dataset.tipo;
     const texto = tp === "fu" ? FOLLOWUP_TEXTO : tp === "ret" ? ((triagens[cnpj] || {}).rascunho || RETOMAR_TEXTO) : lead.mensagem;
@@ -567,7 +611,7 @@ function iniciar() {
     document.getElementById("rodape").textContent =
       `Lista de ${quando}: ${RESUMO.totalAprovadas} empresas no país passaram nos filtros (optantes do Simples, ME ou maiores, 10+ anos, com celular; quem venceu contrato público recente na área entra mesmo sem esses critérios); ` +
       `as ${RESUMO.noPainel} mais prioritárias estão aqui, começando pelo Paraná (região de Curitiba e litoral primeiro). Fonte: dados abertos de CNPJ da Receita Federal. ` +
-      `Quem pedir para não receber mais mensagens: marque "Sem interesse". "Contato futuro" volta para a Fila de hoje na data marcada.`;
+      `Quem pedir para não receber mais mensagens: marque "Sem interesse". "Contato futuro" volta para a Fila de hoje na data marcada (30 dias). Sem resposta em 5 dias úteis: a triagem marca "Sem resposta".`;
   }
   render();
 }
@@ -579,14 +623,14 @@ iniciar();
   db.collection("status").onSnapshot((snap) => {
     const novo = {};
     for (const d of snap.docs) novo[d.id] = d.data();
-    marcas = novo;
-    render();
+    marcas = novo; statusCarregado = true;
+    render(); aplicarTriagensAuto();
   }, (err) => mostrarAviso("Parei de receber atualizações de status (" + err.code + "). Recarregue a página."));
   db.collection("triagem").onSnapshot((snap) => {
     const novo = {};
     for (const d of snap.docs) novo[d.id] = d.data();
     triagemDocs = novo; montarTriagens();
-    render();
+    render(); aplicarTriagensAuto();
   }, () => {});
   db.collection("demandas").onSnapshot((snap) => {
     const novo = {};
