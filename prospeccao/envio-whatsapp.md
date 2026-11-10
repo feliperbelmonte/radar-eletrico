@@ -34,4 +34,4 @@
 ## Lições (atualize aqui)
 
 <!-- - AAAA-MM-DD — o que mudou e por quê -->
-- 2026-11-10 — roteiro criado; primeira execução ainda não feita.
+- 2026-11-10 — roteiro criado. 1ª execução (10/11): 12 enviadas, 2 puladas (sem WhatsApp), ~24 min.
