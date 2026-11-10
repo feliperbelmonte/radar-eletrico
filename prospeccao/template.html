@@ -123,6 +123,11 @@
   .badge.sem_interesse { background: var(--crit-soft); color: var(--crit); border-color: transparent; }
   .badge.pulada { background: var(--surface-2); color: var(--text-faint); border-style: dashed; }
   .badge.fu { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+  .badge.futuro { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent); border-style: dashed; }
+  .sugestao { font-size: 0.84rem; background: var(--wa-soft); border-radius: 7px; padding: 8px 10px; display: grid; gap: 6px; }
+  .sugestao .rasc { white-space: pre-wrap; color: var(--text-muted); }
+  .sugestao .acoes-s { display: flex; gap: 8px; flex-wrap: wrap; }
+  input.data { font: inherit; font-size: 0.8rem; padding: 5px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--text); }
   .tags .trilha { font-weight: 600; }
   .tags .trilha.licitacao { background: var(--warn-soft); color: var(--warn); }
   .tags .trilha.pericia { background: var(--accent-soft); color: var(--accent-ink); }
@@ -208,6 +213,9 @@ const trilhaDe = (l) => l.trilha || "projeto";
 // Follow-up: 1 só, depois de DIAS_FOLLOWUP dias úteis sem resposta (skill prospeccao-captacao)
 const DIAS_FOLLOWUP = 5;
 const FOLLOWUP_TEXTO = "Oi, tudo bem? Só retomando a mensagem que mandei semana passada: se em algum momento vocês precisarem de projeto elétrico, fico à disposição. Se não fizer sentido, me avisa que não mando mais.";
+// Contato futuro: volta para a Fila de hoje na data retomarEm, com este texto (ou o rascunho da triagem, se houver)
+const DIAS_FUTURO = 60;
+const RETOMAR_TEXTO = "Oi, tudo bem? Conversamos há um tempo sobre projeto elétrico. Passando para saber se surgiu alguma demanda em que eu possa ajudar (projeto, SPDA, laudo ou subestação).";
 // Etapas do funil (as skills prospeccao-* usam os mesmos nomes)
 const STATUS = [
   ["a_contatar", "A contatar"],
@@ -216,6 +224,7 @@ const STATUS = [
   ["qualificado", "Qualificado"],
   ["proposta", "Proposta enviada"],
   ["cliente", "Cliente"],
+  ["futuro", "Contato futuro"],
   ["sem_interesse", "Sem interesse"],
   ["pulada", "Pulada (não enviada)"],
 ];
@@ -225,6 +234,16 @@ const estado = { filtro: "hoje", uf: "", seg: "", tri: "", q: "", limite: 30 };
 let demandas = {};   // id -> demanda de plataforma (Workana, 99Freelas...), gravada pela tarefa agendada
 const ST_DEMANDA = [["nova", "Nova"], ["proposta", "Proposta enviada"], ["ganha", "Ganha"], ["descartada", "Descartada"]];
 let marcas = {};      // cnpj -> {status, quando, nota}
+let triagemDocs = {}; // id -> sugestão gravada pela triagem diária do WhatsApp (coleção "triagem")
+let triagens = {};    // cnpj -> sugestão pendente mais recente (sem "resolvido")
+function montarTriagens() {
+  const t = {};
+  for (const [id, d] of Object.entries(triagemDocs)) {
+    if (!d || d.resolvido || !d.cnpj || !d.status) continue;
+    if (!t[d.cnpj] || String(d.em || "") > String(t[d.cnpj].em || "")) t[d.cnpj] = { ...d, id };
+  }
+  triagens = t;
+}
 let db = null;
 const lerFiltro = () => { try { return JSON.parse(localStorage.getItem("prosp-filtros") || "{}"); } catch { return {}; } };
 const salvarFiltro = () => { try { localStorage.setItem("prosp-filtros", JSON.stringify({ filtro: estado.filtro, uf: estado.uf, seg: estado.seg, tri: estado.tri })); } catch {} };
@@ -236,6 +255,8 @@ const fone = (n) => n.length === 11 ? `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.s
 const statusDe = (l) => (marcas[l.cnpj] && marcas[l.cnpj].status) || "a_contatar";
 const diaBR = (d) => new Date(d).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
 const hojeISO = () => diaBR(new Date());
+const somaDias = (n) => diaBR(new Date(Date.now() + n * 864e5));
+const dataBR = (iso) => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) : "";
 function diasUteisDesde(iso) {
   const ini = new Date(diaBR(iso) + "T12:00:00Z"), fim = new Date(hojeISO() + "T12:00:00Z");
   let n = 0;
@@ -250,9 +271,11 @@ const passaFiltros = (l) => (!estado.uf || l.uf === estado.uf) && (!estado.seg |
 // Fila do dia: follow-ups vencidos + novas até completar a meta; quem já foi feito hoje fica no fim, apagado
 function filaHoje() {
   const hoje = hojeISO();
-  const fuPend = [], fuFeito = [], novoFeito = [], novoPend = [];
+  const fuPend = [], fuFeito = [], novoFeito = [], novoPend = [], triagem = [], retomar = [];
   for (const l of LEADS) {
     const m = marcas[l.cnpj] || {};
+    if (triagens[l.cnpj]) { triagem.push(l); continue; }
+    if (statusDe(l) === "futuro" && m.retomarEm && m.retomarEm <= hoje) { retomar.push(l); continue; }
     if (m.followupEm && diaBR(m.followupEm) === hoje) fuFeito.push(l);
     else if (statusDe(l) === "contatado" && m.contatadoEm && !m.followupEm && diasUteisDesde(m.contatadoEm) >= DIAS_FOLLOWUP) fuPend.push(l);
     else if (m.contatadoEm && diaBR(m.contatadoEm) === hoje) novoFeito.push(l);
@@ -270,7 +293,7 @@ function filaHoje() {
   }
   for (const t of ORDEM_TRILHAS) for (const l of livres[t]) { if (escolhidos.size >= vagas) break; escolhidos.add(l); }
   novoPend.push(...LEADS.filter((l) => escolhidos.has(l)).sort((a, b) => ORDEM_TRILHAS.indexOf(trilhaDe(a)) - ORDEM_TRILHAS.indexOf(trilhaDe(b))));
-  return { fuPend, fuFeito, novoPend, novoFeito };
+  return { fuPend, fuFeito, novoPend, novoFeito, triagem, retomar };
 }
 
 function contar() {
@@ -292,7 +315,7 @@ function renderNumeros() {
   const f = filaHoje();
   const fuTot = f.fuPend.length + f.fuFeito.length;
   document.getElementById("hojeFu").textContent = fuTot ? `follow-ups: ${f.fuFeito.length} / ${fuTot}` : "";
-  const pend = f.fuPend.length + f.novoPend.length;
+  const pend = f.fuPend.length + f.novoPend.length + f.triagem.length + f.retomar.length;
   const dNovas = Object.values(demandas).filter((d) => (d.status || "nova") === "nova").length;
   document.getElementById("chips").innerHTML = `<button class="chip hoje${estado.filtro === "hoje" ? " on" : ""}" data-f="hoje">Fila de hoje<span class="c">${pend}</span></button>`
     + `<button class="chip hoje${estado.filtro === "demandas" ? " on" : ""}" data-f="demandas">Demandas em plataformas<span class="c">${dNovas}</span></button>` + STATUS.map(([k, r]) =>
@@ -319,29 +342,35 @@ function filtrados() {
 function cartao(l, tipo) {
   const m = marcas[l.cnpj] || {};
   const st = statusDe(l);
-  const fu = tipo === "fu";
-  const texto = fu ? FOLLOWUP_TEXTO : l.mensagem;
-  const feito = fu ? !!m.followupEm : st !== "a_contatar";
+  const fu = tipo === "fu", ret = tipo === "ret", tri = tipo === "tri";
+  const sg = triagens[l.cnpj] || null;
+  const texto = fu ? FOLLOWUP_TEXTO : ret ? ((sg && sg.rascunho) || RETOMAR_TEXTO) : l.mensagem;
+  const feito = tri ? false : fu ? !!m.followupEm : ret ? false : st !== "a_contatar";
   const quando = m.quando ? new Date(m.quando).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
   const desde = m.contatadoEm ? new Date(m.contatadoEm).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" }) : "";
-  return `<article class="card${feito ? " feito" : ""}" data-cnpj="${esc(l.cnpj)}" data-tipo="${fu ? "fu" : "novo"}">
+  return `<article class="card${feito ? " feito" : ""}" data-cnpj="${esc(l.cnpj)}" data-tipo="${fu ? "fu" : ret ? "ret" : "novo"}">
     <div class="linha1">
       <div style="min-width:0">
         <div class="nome">${esc(l.empresa)}</div>
         <div class="razao">${esc(l.razao)}</div>
         <div class="local">${esc(l.cidade)} / ${esc(l.uf)}${l.bairro ? " · " + esc(l.bairro) : ""}</div>
       </div>
-      <span>${fu ? `<span class="badge fu">Follow-up · 1º contato ${esc(desde)}</span> ` : ""}<span class="badge ${st}">${ROTULO[st]}</span></span>
+      <span>${fu ? `<span class="badge fu">Follow-up · 1º contato ${esc(desde)}</span> ` : ""}<span class="badge ${st}">${ROTULO[st]}${st === "futuro" && m.retomarEm ? " · retomar " + esc(dataBR(m.retomarEm)) : ""}</span></span>
     </div>
     ${l.sinal ? `<div class="sinal">Contrato com <strong>${esc(l.sinal.orgao)}</strong>${l.sinal.uf ? " (" + esc(l.sinal.uf) + ")" : ""}: ${esc(l.sinal.objeto)}${l.sinal.assinatura ? " · assinado em " + esc(l.sinal.assinatura) : ""}${l.sinal.valor ? " · " + esc(Number(l.sinal.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })) : ""}${l.sinal.link ? ` · <a href="${esc(l.sinal.link)}" target="_blank" rel="noopener">ver no PNCP</a>` : ""}</div>` : ""}
     <div class="tags"><span class="trilha ${esc(trilhaDe(l))}">${esc(ROTULO_TRILHA[trilhaDe(l)])}</span><span>${esc(l.segmento)}</span><span>${esc(l.porte)}</span>${l.desde ? `<span>desde ${esc(l.desde)}</span>` : ""}</div>
     <div class="contato">${esc(fone(l.celular))}${l.email ? " · " + esc(l.email) : ""}</div>
-    <details class="msg"${tipo && !feito ? " open" : ""}><summary>${fu ? "Mensagem de follow-up" : "Ver mensagem"}</summary><p>${esc(texto)}</p></details>
+    ${sg && sg.status ? `<div class="sugestao"><div><strong>Triagem do WhatsApp${sg.em ? " (" + esc(dataBR(diaBR(sg.em))) + ")" : ""}:</strong> sugiro <strong>${esc(ROTULO[sg.status] || sg.status)}</strong>${sg.status === "futuro" && sg.retomarEm ? " até " + esc(dataBR(sg.retomarEm)) : ""}. ${esc(sg.motivo || "")}</div>
+      ${sg.rascunho ? `<div class="rasc">Rascunho: ${esc(sg.rascunho)}</div>` : ""}
+      <div class="acoes-s">${sg.rascunho && sg.status !== "futuro" ? `<a class="btn-wa" href="${esc(linkWa(l, sg.rascunho))}" target="_blank" rel="noopener">Responder no WhatsApp</a>` : ""}
+        <button class="btn" data-acao="aceitar">Aceitar sugestão</button><button class="btn" data-acao="ignorar">Ignorar</button></div></div>` : ""}
+    ${tri ? "" : `<details class="msg"${tipo && !feito ? " open" : ""}><summary>${fu ? "Mensagem de follow-up" : ret ? "Mensagem de retomada" : "Ver mensagem"}</summary><p>${esc(texto)}</p></details>`}
     <div class="acoes">
-      <a class="btn-wa" href="${esc(linkWa(l, texto))}" target="_blank" rel="noopener" data-acao="${fu ? "wa-fu" : "wa"}">${fu ? "Enviar follow-up" : "Abrir no WhatsApp"}</a>
+      ${tri ? "" : `<a class="btn-wa" href="${esc(linkWa(l, texto))}" target="_blank" rel="noopener" data-acao="${fu ? "wa-fu" : ret ? "wa-ret" : "wa"}">${fu ? "Enviar follow-up" : ret ? "Retomar contato" : "Abrir no WhatsApp"}</a>`}
       <button class="btn" data-acao="copiar">Copiar mensagem</button>
       ${st === "a_contatar" ? `<button class="btn" data-acao="pular" title="Não serve: some da fila sem contar como contato">Pular</button>` : ""}
       <select data-acao="status" aria-label="Status">${STATUS.map(([k, r]) => `<option value="${k}"${k === st ? " selected" : ""}>${r}</option>`).join("")}</select>
+      ${st === "futuro" ? `<input type="date" class="data" data-acao="retomar" aria-label="Retomar em" title="Retomar em" value="${esc(m.retomarEm || "")}" ${db ? "" : "disabled"}>` : ""}
       <input class="nota" data-acao="nota" placeholder="Anotação (ex.: retornar semana que vem)" value="${esc(m.nota || "")}" ${db ? "" : "disabled"}>
     </div>
     ${quando ? `<div class="quando">Atualizado em ${quando}</div>` : ""}
@@ -351,7 +380,7 @@ function cartao(l, tipo) {
 function renderHoje() {
   const lista = document.getElementById("lista");
   const f = filaHoje();
-  const pend = f.fuPend.length + f.novoPend.length, feitos = f.fuFeito.length + f.novoFeito.length;
+  const pend = f.fuPend.length + f.novoPend.length + f.retomar.length, feitos = f.fuFeito.length + f.novoFeito.length;
   document.getElementById("contagem").textContent = pend
     ? `${pend} para enviar hoje · ${feitos} já enviada${feitos === 1 ? "" : "s"}. Confira a mensagem, toque no botão verde e envie no WhatsApp; o painel marca sozinho.`
     : `Fila de hoje concluída (${feitos} enviada${feitos === 1 ? "" : "s"}). Quando alguém responder, me conte no chat que eu atualizo o painel.`;
@@ -359,7 +388,8 @@ function renderHoje() {
   if (!LEADS.length) { lista.innerHTML = `<div class="vazio">Nenhuma empresa carregada ainda.</div>`; return; }
   const bloco = (titulo, pares) => pares.length ? `<div class="secao">${titulo} · ${pares.length}</div>` + pares.map(([l, t]) => cartao(l, t)).join("") : "";
   const par = (t) => (l) => [l, t];
-  lista.innerHTML = (bloco("Follow-up", f.fuPend.map(par("fu"))) + bloco("Novas empresas", f.novoPend.map(par("novo")))
+  lista.innerHTML = (bloco("Triagem do WhatsApp: confira as sugestões", f.triagem.map(par("tri"))) + bloco("Retomar contato", f.retomar.map(par("ret")))
+    + bloco("Follow-up", f.fuPend.map(par("fu"))) + bloco("Novas empresas", f.novoPend.map(par("novo")))
     + bloco("Já enviadas hoje", [...f.fuFeito.map(par("fu")), ...f.novoFeito.map(par("novo"))]))
     || `<div class="vazio">Nada para hoje com esses filtros.</div>`;
 }
@@ -424,12 +454,25 @@ async function gravar(cnpj, mudanca) {
   // segmento, região e modelo de mensagem vão junto para a revisão do funil (o que responde melhor)
   const contexto = { empresa: lead.empresa || "", segmento: lead.segmento || "", uf: lead.uf || "", cidade: lead.cidade || "", modelo: lead.modelo || 0 };
   contexto.trilha = trilhaDe(lead);
+  if (lead.celular) contexto.celular = lead.celular;   // a lista semanal troca de empresas; a triagem do WhatsApp precisa do número depois
   const novo = { ...contexto, ...atual, ...mudanca, quando: new Date().toISOString() };
+  for (const k of Object.keys(novo)) if (novo[k] === null) delete novo[k];   // null = apagar o campo
   marcas = { ...marcas, [cnpj]: novo };
   render();
   if (!db) return;
   try { await db.doc("status/" + cnpj).set(novo); }
   catch (e) { mostrarAviso("Não consegui salvar agora (" + (e && e.code || "erro") + "). A mudança aparece só nesta tela."); }
+}
+
+// Marca como resolvidas todas as sugestões pendentes da empresa (a mais recente e as antigas)
+async function resolverTriagem(cnpj, como) {
+  const agora = new Date().toISOString();
+  const ids = Object.entries(triagemDocs).filter(([, d]) => d && d.cnpj === cnpj && !d.resolvido).map(([id]) => id);
+  for (const id of ids) triagemDocs = { ...triagemDocs, [id]: { ...triagemDocs[id], resolvido: como, resolvidoEm: agora } };
+  montarTriagens(); render();
+  if (!db) return;
+  try { for (const id of ids) await db.doc("triagem/" + id).set(triagemDocs[id]); }
+  catch (e) { mostrarAviso("Não consegui salvar agora (" + (e && e.code || "erro") + ")."); }
 }
 
 function mostrarAviso(txt) {
@@ -462,8 +505,25 @@ lista.addEventListener("click", async (e) => {
   if (alvo.dataset.acao === "wa-fu" && !(marcas[cnpj] || {}).followupEm) {
     gravar(cnpj, { followupEm: new Date().toISOString() });
   }
+  if (alvo.dataset.acao === "wa-ret") {
+    // retomada conta como novo contato, sem novo follow-up automático
+    gravar(cnpj, { status: "contatado", retomadoEm: new Date().toISOString(), followupEm: new Date().toISOString(), retomarEm: null });
+  }
+  if (alvo.dataset.acao === "aceitar") {
+    const m = marcas[cnpj] || {}, sg = triagens[cnpj] || {};
+    if (!sg.status) return;
+    const mud = { status: sg.status, triadoEm: new Date().toISOString() };
+    if (sg.status === "futuro") mud.retomarEm = sg.retomarEm || somaDias(DIAS_FUTURO);
+    else mud.retomarEm = null;
+    if (sg.nota) mud.nota = ((m.nota ? m.nota + " | " : "") + sg.nota).slice(-500);
+    if (!m.contatadoEm) mud.contatadoEm = new Date().toISOString();
+    resolverTriagem(cnpj, "aceita");
+    gravar(cnpj, mud);
+  }
+  if (alvo.dataset.acao === "ignorar") resolverTriagem(cnpj, "ignorada");
   if (alvo.dataset.acao === "copiar") {
-    const texto = alvo.closest(".card").dataset.tipo === "fu" ? FOLLOWUP_TEXTO : lead.mensagem;
+    const tp = alvo.closest(".card").dataset.tipo;
+    const texto = tp === "fu" ? FOLLOWUP_TEXTO : tp === "ret" ? ((triagens[cnpj] || {}).rascunho || RETOMAR_TEXTO) : lead.mensagem;
     try { await navigator.clipboard.writeText(texto); alvo.textContent = "Copiada"; }
     catch { const d = alvo.closest(".card").querySelector("details"); d.open = true; alvo.textContent = "Selecione o texto"; }
     setTimeout(() => { alvo.textContent = "Copiar mensagem"; }, 1800);
@@ -480,8 +540,10 @@ lista.addEventListener("change", (e) => {
   const cnpj = alvo.closest(".card").dataset.cnpj;
   if (alvo.dataset.acao === "status") {
     const extra = !["a_contatar", "pulada"].includes(alvo.value) && !(marcas[cnpj] || {}).contatadoEm ? { contatadoEm: new Date().toISOString() } : {};
+    if (alvo.value === "futuro") extra.retomarEm = (marcas[cnpj] || {}).retomarEm || somaDias(DIAS_FUTURO);
     gravar(cnpj, { status: alvo.value, ...extra });
   }
+  if (alvo.dataset.acao === "retomar" && alvo.value) gravar(cnpj, { retomarEm: alvo.value });
   if (alvo.dataset.acao === "nota") gravar(cnpj, { nota: alvo.value.slice(0, 500) });
 });
 
@@ -502,7 +564,7 @@ function iniciar() {
     document.getElementById("rodape").textContent =
       `Lista de ${quando}: ${RESUMO.totalAprovadas} empresas no país passaram nos filtros (optantes do Simples, ME ou maiores, 10+ anos, com celular; quem venceu contrato público recente na área entra mesmo sem esses critérios); ` +
       `as ${RESUMO.noPainel} mais prioritárias estão aqui, começando pelo Paraná (região de Curitiba e litoral primeiro). Fonte: dados abertos de CNPJ da Receita Federal. ` +
-      `Quem pedir para não receber mais mensagens: marque "Sem interesse".`;
+      `Quem pedir para não receber mais mensagens: marque "Sem interesse". "Contato futuro" volta para a Fila de hoje na data marcada.`;
   }
   render();
 }
@@ -517,6 +579,12 @@ iniciar();
     marcas = novo;
     render();
   }, (err) => mostrarAviso("Parei de receber atualizações de status (" + err.code + "). Recarregue a página."));
+  db.collection("triagem").onSnapshot((snap) => {
+    const novo = {};
+    for (const d of snap.docs) novo[d.id] = d.data();
+    triagemDocs = novo; montarTriagens();
+    render();
+  }, () => {});
   db.collection("demandas").onSnapshot((snap) => {
     const novo = {};
     for (const d of snap.docs) novo[d.id] = d.data();

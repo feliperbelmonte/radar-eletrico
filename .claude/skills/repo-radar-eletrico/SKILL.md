@@ -26,6 +26,7 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 | `docs/prompt-v1-claude-sozinho.md` | Histórico: prompt antigo em que a Claude buscava sozinha |
 | `prospeccao.toml` | **Mudar o público da prospecção**: CNAEs, porte, MEI, UFs, prioridade, mensagens |
 | `leads.py`, `prospeccao/template.html`, `.github/workflows/leads.yml`, `tests/test_leads.py` | Prospecção de empresas (ver seção própria) |
+| `prospeccao/triagem.py`, `prospeccao/triagem-whatsapp.md`, `tests/test_triagem.py` | Triagem diária das conversas do WhatsApp Web (roteiro + script que monta a lista e os lotes de gravação) |
 | `docs/` | Histórico de decisões: `automacao-whatsapp.md` (rotina diária), `foco-2026-11-05.md` (filtros e trilhas) |
 
 ## Prospecção de empresas (leads)
@@ -35,7 +36,7 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 - Filtro padrão: segmentos `[[segmento]]` (instalação elétrica 4321500, arquitetura 7111100, construtora 4120400, engenharia 7112000, montagem industrial 3321000/4292802, redes 4221902/4221903, iluminação 4329104, climatização 4322302), situação ativa (02), todos os portes (Felipe pediu para incluir empresas maiores), sem MEI, ≥1 ano, com celular (9 dígitos começando com 9, ou 8 dígitos 6-9 sem o nono dígito). Um contato por CNPJ básico, preferindo a matriz. Ordem: cidades de `[prioridade].cidades` ("NOME/UF": região de Curitiba e litoral do PR primeiro), depois UFs (PR, SC, ...); Felipe prefere o PR porque o CREA dele é de lá (mora em Jaraguá do Sul/SC), ordem dos segmentos, CNAE principal, porte maior primeiro, com e-mail, mais antigas.
 - Mensagem: um de 3 modelos em `[[mensagem]]` (serviço = projeto elétrico em geral, não só solar), escolhido pelo hash do CNPJ, com `{atividade}` do segmento; o painel monta o link `https://wa.me/55<ddd><cel>?text=...`. **Envio sempre manual** (decisão do Felipe, 29/10/2026): nada de disparo automático (risco de banimento do número, LGPD).
 - Repo público + telefones: o workflow criptografa `painel.html` → `painel.html.enc` (`openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt`, senha no secret `LEADS_KEY`) e publica no branch `leads` com `resumo.json` (só contagens). Para abrir: `openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in painel.html.enc -out painel.html -pass env:LEADS_KEY`.
-- Painel: Artifact https://claude.ai/artifact/BAJojSBRshrr1MRC4Eoujg com capability `db` (regra: só owner/editores leem e escrevem). Coleção `status`, um documento por CNPJ: `status` (a_contatar, contatado, respondeu, qualificado, proposta, cliente, sem_interesse), `quando`, `contatadoEm`, `nota`, `empresa`, `segmento`, `uf`, `cidade`, `modelo`. Republicar com a mesma `url` mantém os status.
+- Painel: Artifact https://claude.ai/artifact/BAJojSBRshrr1MRC4Eoujg com capability `db` (regra: só owner/editores leem e escrevem). Coleção `status`, um documento por CNPJ: `status` (a_contatar, contatado, respondeu, qualificado, proposta, cliente, futuro, sem_interesse, pulada), `quando`, `contatadoEm`, `followupEm`, `retomarEm` (contato futuro: volta na Fila de hoje nessa data), `retomadoEm`, `triadoEm`, `celular` (guardado ao gravar, porque a lista semanal troca de empresas), `nota`, `empresa`, `segmento`, `uf`, `cidade`, `modelo`. Coleção `triagem`: sugestões da triagem diária do WhatsApp (id `<cnpj>-<AAAAMMDDHHMM>`, `status`, `motivo`, `rascunho`, `retomarEm`, `nota`, `em`, `resolvido` aceita/ignorada); a triagem nunca altera `status`, quem aplica é o Felipe no botão "Aceitar sugestão". Republicar com a mesma `url` mantém os status.
 - Skills do funil em `skills/` (prospeccao-funil, -captacao, -resposta, -qualificacao, -proposta): cada uma tem "Lições aprendidas"; o procedimento de revisão está na prospeccao-funil. Atualizou uma skill → entregar o SKILL.md ao Felipe e commitar aqui.
 
 ## Premissas de negócio
@@ -61,6 +62,8 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 - Datas do PNCP vêm sem fuso: tratadas como horário de Brasília (UTC-3).
 
 ## Histórico
+
+- 2026-11-10: triagem diária do WhatsApp (decisão do Felipe: "caminho fechado", sugestões no painel, ele aceita): tarefa seg–sex 17h41 com o computador dele (Claude in Chrome + WhatsApp Web), roteiro `prospeccao/triagem-whatsapp.md` lido antes de tudo e `prospeccao/triagem.py` para economizar tokens. Painel ganhou status "Contato futuro" (data de retomada, volta na Fila de hoje) e a seção "Triagem do WhatsApp" com Aceitar/Ignorar/Responder no WhatsApp. Números das 38 empresas contatadas que ainda estavam na lista foram copiados para o banco; as que já tinham saído da lista são buscadas pelo nome no WhatsApp Web.
 
 - 2026-11-09: trilha licitação voltou à abordagem inicial genérica (os 3 textos de projeto, sem citar contrato/órgão): modelos `trilha = "licitacao"` removidos do `prospeccao.toml` (`modelos_da_trilha` cai nos de projeto); painel publicado já com as 51 mensagens trocadas.
 
