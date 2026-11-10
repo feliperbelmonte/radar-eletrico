@@ -35,3 +35,15 @@
 
 <!-- - AAAA-MM-DD — o que mudou e por quê -->
 - 2026-11-10 — roteiro criado. 1ª execução (10/11): 12 enviadas, 2 puladas (sem WhatsApp), ~24 min.
+- 2026-11-10 (1ª execução, ~15h30) — 4 enviadas de 15. Lições:
+  - Modelos de perícia vêm com "Bom dia!" fixo (sem {saudacao}); à tarde ficam errados → pulei 2 (Vitorio Karan, Del Claro). Corrigir os modelos no painel/envio.py.
+  - Detectar o envio pelo texto do #main contendo um trecho próprio da empresa (ex.: "<nome> foi uma delas") com a caixa vazia; `.message-out` não achou nada e o `inicio` é igual em todas as mensagens.
+  - browser_batch estoura o tempo com ~90 s; use lotes de ~50 s (5 × espera de 10 s + checagem).
+  - Se aparecer "O WhatsApp está aberto em outra janela", não clique em "Usar nesta janela" (derrubaria a sessão do Felipe): encerre e avise.
+  - Se a caixa esvaziar mas a mensagem não aparecer na conversa, não marque na hora, mas reconfira depois abrindo a conversa sem texto (na Engecon a mensagem tinha ido, às 15:35).
+  - Git na pasta montada: precisa de permissão de exclusão (arquivos .lock) e `git -c core.autocrlf=true` (senão todo arquivo aparece modificado por CRLF).
+- 2026-11-10 (tarde, com o Felipe) — regras novas:
+  - Meta é 15 ENVIADAS por dia (sem WhatsApp/sem envio não conta): siga pela fila (`fila --meta 45`) até completar 15.
+  - ANTES de abrir com texto, abra `web.whatsapp.com/send?phone=…` SEM `text` e conte as mensagens do #main (ignore o aviso de criptografia). Se já houver mensagem: não abra com texto; se for a nossa de hoje, marque contatado (conta nas 15); senão pule.
+  - O painel pode não saber de envios feitos pelo Felipe (ele envia rápido, às vezes depois que a Claude já passou para a próxima) — sempre confira o histórico.
+  - Se o Felipe trocar de conversa na aba (caixa com outro texto), pare de ler/navegar e espere ele dizer "continua".
