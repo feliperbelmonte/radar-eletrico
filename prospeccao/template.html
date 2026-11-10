@@ -212,10 +212,10 @@ const ORDEM_TRILHAS = ["licitacao", "pericia", "projeto"];
 const trilhaDe = (l) => l.trilha || "projeto";
 // Follow-up: 1 só, depois de DIAS_FOLLOWUP dias úteis sem resposta (skill prospeccao-captacao)
 const DIAS_FOLLOWUP = 5;
-const FOLLOWUP_TEXTO = "Oi, tudo bem? Só retomando a mensagem que mandei semana passada: se em algum momento vocês precisarem de projeto elétrico, fico à disposição. Se não fizer sentido, me avisa que não mando mais.";
+const FOLLOWUP_TEXTO = "{saudacao}, tudo bem? Só passando para retomar a mensagem que mandei semana passada. Se em algum momento vocês precisarem de engenheiro eletricista, fico à disposição. Se no momento não for o caso, sem problema!";
 // Contato futuro: volta para a Fila de hoje na data retomarEm, com este texto (ou o rascunho da triagem, se houver)
 const DIAS_FUTURO = 60;
-const RETOMAR_TEXTO = "Oi, tudo bem? Conversamos há um tempo sobre projeto elétrico. Passando para saber se surgiu alguma demanda em que eu possa ajudar (projeto, SPDA, laudo ou subestação).";
+const RETOMAR_TEXTO = "{saudacao}, tudo bem? Aqui é o Felipe, engenheiro eletricista. Conversamos há um tempo e passei para saber se surgiu alguma demanda em que eu possa ajudar. Se no momento não for o caso, sem problema!";
 // Etapas do funil (as skills prospeccao-* usam os mesmos nomes)
 const STATUS = [
   ["a_contatar", "A contatar"],

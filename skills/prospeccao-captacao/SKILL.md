@@ -17,9 +17,10 @@ Contexto geral, painel e ciclo de aprendizado: skill `prospeccao-funil`.
 
 - Envio manual, uma empresa por vez. Nada de disparo em massa, listas de transmissão ou ferramentas de automação de WhatsApp.
 - Meta inicial: 15 novas conversas por dia. Começar devagar protege o número contra bloqueio; aumentar só se não houver sinais de bloqueio e se ele der conta das respostas.
-- Mensagem curta, em primeira pessoa, sem cara de anúncio: quem é, por que está escrevendo para *aquela* empresa, o que oferece (só projeto, sem concorrer na execução), uma pergunta simples, saída fácil.
+- Mensagem curta, em primeira pessoa, sem cara de anúncio: quem é, por que está escrevendo para *aquela* empresa, uma pergunta aberta, saída leve. Texto atual: modelo 4 em `prospeccao.toml`.
 - Quem pedir para não receber mais: marcar "Sem interesse" na hora e nunca mais escrever.
-- Follow-up: no máximo 1, depois de 4 a 5 dias úteis sem resposta, curto e sem cobrança (ex.: "Oi, só retomando a mensagem de semana passada: se em algum momento precisarem de projeto elétrico, fico à disposição."). Sem resposta depois disso: deixar quieto.
+- Follow-up: no máximo 1, depois de 5 dias úteis sem resposta, curto e sem cobrança. Texto atual (constante `FOLLOWUP_TEXTO` no painel): "{saudacao}, tudo bem? Só passando para retomar a mensagem que mandei semana passada. Se em algum momento vocês precisarem de engenheiro eletricista, fico à disposição. Se no momento não for o caso, sem problema!". Sem resposta depois disso: a triagem diária sugere "Contato futuro" em 3 meses (uma retomada só).
+- Tom (pedido do Felipe, 10/11/2026): mensagem aberta, sem listar serviços nem "faço só projeto", para a pessoa perguntar com o que ele trabalha ou contar a necessidade. Cumprimento "Bom dia/Boa tarde" pelo horário (`{saudacao}`). Fechamento leve "Se no momento não for o caso, sem problema!"; evitar "me avisa que não mando mais" (ele achou ofensivo).
 - Não prometer nada que dependa de ART fora do PR sem confirmar a exigência do CREA local.
 
 ## Ao ajudar o Felipe nesta etapa
@@ -31,4 +32,4 @@ Contexto geral, painel e ciclo de aprendizado: skill `prospeccao-funil`.
 ## Lições aprendidas
 
 <!-- Formato: - AAAA-MM-DD — lição. Evidência: ... [hipótese | confirmada] -->
-- (ainda nenhuma — a primeira revisão do funil acontece depois dos primeiros contatos)
+- 2026-11-10 — os 3 textos iniciais longos, com lista de serviços (modelos 1–3), tiveram ~1 resposta em ~80 contatos; trocados pelo modelo 4 (curto e aberto). Evidência: banco do painel em 10/11. [hipótese: texto curto e aberto responde mais — conferir na próxima revisão comparando modelo 4 x 1–3]
