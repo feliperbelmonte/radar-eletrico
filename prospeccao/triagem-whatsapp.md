@@ -54,4 +54,4 @@
 <!-- - AAAA-MM-DD — o que mudou e por quê -->
 - 2026-11-10 — roteiro criado.
 - 2026-11-10 — 1ª execução agendada falhou: rodou só na nuvem, sem ferramentas `mcp__claude-in-chrome__*`. A tarefa precisa de "Require this computer" ligado no app desktop. Sem essas ferramentas no início, notifique e encerre antes de baixar dados.
-- - 2026-11-10 — 3ª execução (disparo manual, após o Felipe aprovar no computador) também veio só na nuvem, sem `mcp__claude-in-chrome__*`. Disparo manual pode não herdar o computador; confirme "Require this computer" e teste pelo horário agendado.
+- 2026-11-10 — 3ª execução (disparo manual, após o Felipe aprovar no computador) também veio só na nuvem, sem `mcp__claude-in-chrome__*`. Disparo manual pode não herdar o computador; confirme "Require this computer" e teste pelo horário agendado.
