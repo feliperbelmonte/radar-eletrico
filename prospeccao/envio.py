@@ -91,6 +91,8 @@ def montar_fila(leads: list[dict], fila_cfg: dict, status: dict, agora: datetime
     out = []
     for l in escolhidos:
         msg = l["mensagem"].replace("{saudacao}", sd)
+        if msg.startswith("Bom dia!"):  # mensagens antigas de perícia geradas com "Bom dia!" fixo
+            msg = sd + msg[len("Bom dia"):]
         out.append({"cnpj": l["cnpj"], "empresa": l["empresa"], "cidade": f'{l.get("cidade", "")}/{l.get("uf", "")}',
                     "trilha": trilha(l), "mensagem": msg, "inicio": msg[:40],
                     "url": f'https://web.whatsapp.com/send?phone=55{l["celular"]}&text={quote(msg)}'})

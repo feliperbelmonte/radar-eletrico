@@ -35,6 +35,11 @@ class TestEnvio(unittest.TestCase):
         tarde = e.montar_fila(self.leads, self.cfg, {}, datetime.fromisoformat("2026-11-10T15:00:00-03:00"))
         self.assertTrue(tarde[0]["mensagem"].startswith("Boa tarde"))
 
+    def test_bom_dia_fixo_antigo(self):
+        leads = [dict(self.leads[0], mensagem="Bom dia! Sou o Felipe.")]
+        f = e.montar_fila(leads, self.cfg, {}, datetime.fromisoformat("2026-11-10T15:00:00-03:00"))
+        self.assertTrue(f[0]["mensagem"].startswith("Boa tarde! Sou o Felipe."))
+
     def test_marcar(self):
         agora = datetime.fromisoformat("2026-11-10T15:00:00-03:00")
         d = e.doc_contatado(self.leads[2], agora)

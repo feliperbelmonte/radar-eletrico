@@ -177,7 +177,7 @@ texto = "Olá, tudo bem? Aqui é o {nome}, engenheiro eletricista ({registro}). 
 
 [[mensagem]]
 trilha = "pericia"
-texto = "Bom dia! Sou o {nome}, engenheiro eletricista ({registro}). Encontrei o escritório {empresa} em {cidade} e queria deixar meu contato para casos com questão técnica elétrica: parecer técnico para instruir a inicial ou a contestação, quesitos, acompanhamento de perícia como assistente técnico e impugnação de laudo. Temas comuns: dano elétrico em equipamentos, incêndio, acidente com instalação, usina solar que não gera o contratado e divergência de consumo com a concessionária. Posso ajudar em algum processo? Se não for o caso, me avisa que não incomodo mais."
+texto = "{saudacao}! Sou o {nome}, engenheiro eletricista ({registro}). Encontrei o escritório {empresa} em {cidade} e queria deixar meu contato para casos com questão técnica elétrica: parecer técnico para instruir a inicial ou a contestação, quesitos, acompanhamento de perícia como assistente técnico e impugnação de laudo. Temas comuns: dano elétrico em equipamentos, incêndio, acidente com instalação, usina solar que não gera o contratado e divergência de consumo com a concessionária. Posso ajudar em algum processo? Se não for o caso, me avisa que não incomodo mais."
 
 [[mensagem]]
 trilha = "pericia"
