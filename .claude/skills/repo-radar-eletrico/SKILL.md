@@ -64,6 +64,8 @@ Motivo da divisão: o ambiente da Claude não alcança `pncp.gov.br` (403 no pro
 
 ## Histórico
 
+- 2026-11-10: "abrir conversas do dia" passou a rodar sozinha seg–sex 08h55 (Felipe só com o Claude aberto e dá Enter); triagem voltou para 17h41 (não colide com o envio). A triagem agora aplica direto no status (`triagem.py cnpjs` → ArtifactData get das versões → `gravar --versoes` gera `lote_status*.json`), sem depender de abrir o painel; o painel continua aplicando o que ficar pendente. Prompts novos das duas tarefas em `docs/prompt-abrir-conversas.md` e `docs/prompt-triagem.md` (aguardam o Felipe colar no app).
+
 - 2026-11-10: regras do Felipe para o controle: sem follow-up (`FOLLOWUP_ATIVO = false` no painel); sem resposta em 5 dias úteis → status `sem_resposta` (declinado); "vou deixar anotado" → `futuro` com retomada em 30 dias; sem interesse → `sem_interesse`. A triagem classifica direto (documentos `auto: true` com `de` = status visto; o painel aplica ao abrir e mostra só quem respondeu com interesse, com "Ok, visto"/"Desfazer") e roda também no fim da tarefa de envio. Prompt novo da fila das 08h37 em `docs/prompt-fila-do-dia.md` (aguarda aprovação do Felipe no computador).
 
 - 2026-11-10: envio "só Enter" pelo Chrome (pedido do Felipe): tarefa sob demanda "Prospecção Elétrica — abrir conversas do dia", vinculada ao computador dele, abre web.whatsapp.com/send?phone=…&text=… uma empresa por vez, espera ele enviar e marca "contatado" no banco. Só empresas novas (ele não quer voltar a falar com quem já foi contatado). Roteiro `prospeccao/envio-whatsapp.md`, script `prospeccao/envio.py`.

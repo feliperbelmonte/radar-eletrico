@@ -181,8 +181,27 @@ def validar(a: dict, leads: dict, hoje: date, status: dict | None = None) -> tup
     return d, None
 
 
+PEDE_ACAO = ("respondeu", "qualificado", "proposta", "cliente")
+
+
+def doc_status(d: dict, atual: dict, agora_iso: str) -> dict:
+    """Mudança no documento de status (ArtifactData "update"); None apaga o campo."""
+    u: dict = {"status": d["status"], "triadoEm": agora_iso, "quando": agora_iso}
+    u["retomarEm"] = d["retomarEm"] if d["status"] == "futuro" else {"__delete__": True}
+    if d.get("nota"):
+        u["nota"] = ((atual.get("nota") + " | ") if atual.get("nota") else "") + d["nota"]
+        u["nota"] = u["nota"][-500:]
+    return u
+
+
 def montar_gravacao(achados: list[dict], leads: dict, agora: datetime, saida: Path,
-                    status: dict | None = None) -> tuple[list[list[dict]], list[str], dict]:
+                    status: dict | None = None, versoes: dict | None = None
+                    ) -> tuple[list[list[dict]], list[str], dict]:
+    """Monta os lotes da coleção "triagem" e, se vierem as versões dos documentos de status
+    (ArtifactData get), também o lote que já aplica a classificação no status (lote_status.json)."""
+    status = status or {}
+    versoes = {re.sub(r"\D", "", k): int(v) for k, v in (versoes or {}).items()}
+    status_writes: list[dict] = []
     hoje = agora.astimezone(BRT).date()
     carimbo = agora.astimezone(BRT).strftime("%Y%m%d%H%M")
     saida.mkdir(parents=True, exist_ok=True)
@@ -198,6 +217,15 @@ def montar_gravacao(achados: list[dict], leads: dict, agora: datetime, saida: Pa
         vistos.add(d["cnpj"])
         d["em"] = agora.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
         d["origem"] = "triagem-whatsapp"
+        if d["cnpj"] in versoes and d["status"] != d["de"]:
+            u = doc_status(d, status.get(d["cnpj"], {}), d["em"])
+            arq_s = saida / f'status-{d["cnpj"]}.json'
+            arq_s.write_text(json.dumps(u, ensure_ascii=False, indent=1), encoding="utf-8")
+            status_writes.append({"op": "update", "collection": "status", "doc_id": d["cnpj"],
+                                  "file_path": str(arq_s.resolve()), "if_version": versoes[d["cnpj"]]})
+            d["aplicadoEm"], d["statusAnterior"] = d["em"], d["de"]
+            if d["status"] not in PEDE_ACAO and not d.get("rascunho"):
+                d["resolvido"], d["resolvidoEm"] = "auto", d["em"]
         doc_id = f'{d["cnpj"]}-{carimbo}'
         arq = saida / f"{doc_id}.json"
         arq.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -206,7 +234,19 @@ def montar_gravacao(achados: list[dict], leads: dict, agora: datetime, saida: Pa
     lotes = [writes[i:i + MAX_LOTE] for i in range(0, len(writes), MAX_LOTE)]
     for n, lote in enumerate(lotes, 1):
         (saida / f"lote{n}.json").write_text(json.dumps(lote, ensure_ascii=False), encoding="utf-8")
+    for n in range(0, len(status_writes), MAX_LOTE):
+        (saida / f"lote_status{n // MAX_LOTE + 1}.json").write_text(
+            json.dumps(status_writes[n:n + MAX_LOTE], ensure_ascii=False), encoding="utf-8")
     return lotes, erros, cont
+
+
+def cnpjs_que_mudam(achados: list[dict], leads: dict, hoje: date, status: dict) -> list[str]:
+    out = []
+    for a in achados:
+        d, err = validar(a, leads, hoje, status)
+        if d and d["status"] != d["de"] and d["cnpj"] not in out:
+            out.append(d["cnpj"])
+    return out
 
 
 def resumo_notificacao(cont: dict) -> str:
@@ -227,7 +267,12 @@ def main(argv: list[str] | None = None) -> int:
     a1.add_argument("--triagem", type=Path)
     a1.add_argument("--hoje")
     a1.add_argument("--json", action="store_true", help="saída em JSON em vez de linhas")
+    a3 = sub.add_parser("cnpjs", help="CNPJs cujo status vai mudar (para buscar as versões com ArtifactData get)")
+    a3.add_argument("--painel", type=Path, required=True)
+    a3.add_argument("--status", type=Path, required=True)
+    a3.add_argument("--achados", type=Path, required=True)
     a2 = sub.add_parser("gravar")
+    a2.add_argument("--versoes", type=Path, help='JSON {"cnpj": versão} dos documentos de status: aplica direto no status')
     a2.add_argument("--painel", type=Path, required=True)
     a2.add_argument("--status", type=Path, required=True, help="pasta da coleção status")
     a2.add_argument("--achados", type=Path, required=True)
@@ -261,10 +306,16 @@ def main(argv: list[str] | None = None) -> int:
     status = ler_colecao(a.status)
     for c, m in status.items():
         leads.setdefault(c, {"cnpj": c, "empresa": m.get("empresa", "")})
-    lotes, erros, cont = montar_gravacao(achados, leads, agora, a.saida, status)
+    if a.cmd == "cnpjs":
+        print(json.dumps(cnpjs_que_mudam(achados, leads, agora.astimezone(BRT).date(), status)))
+        return 0
+    versoes = json.loads(a.versoes.read_text(encoding="utf-8")) if a.versoes else None
+    lotes, erros, cont = montar_gravacao(achados, leads, agora, a.saida, status, versoes)
     for e in erros:
         print("ERRO", e, file=sys.stderr)
-    print(json.dumps({"lotes": [str((a.saida / f"lote{n}.json").resolve()) for n in range(1, len(lotes) + 1)],
+    ls = sorted(str(p.resolve()) for p in a.saida.glob("lote_status*.json")) if versoes else []
+    print(json.dumps({"lotes_status": ls,
+                      "lotes": [str((a.saida / f"lote{n}.json").resolve()) for n in range(1, len(lotes) + 1)],
                       "documentos": sum(len(l) for l in lotes), "erros": len(erros), "contagem": cont,
                       "resumo": resumo_notificacao(cont)}, ensure_ascii=False))
     return 1 if erros and not lotes else 0

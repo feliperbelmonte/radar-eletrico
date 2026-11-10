@@ -78,6 +78,29 @@ class TestTriagem(unittest.TestCase):
         self.assertEqual(doc2["retomarEm"], "2026-12-10")
         self.assertIn("responderam", t.resumo_notificacao(cont))
 
+    def test_aplicar_direto(self):
+        status = {"11111111000111": {"status": "contatado", "nota": "antiga"}, "22222222000122": {"status": "contatado"},
+                  "33333333000133": {"status": "contatado"}}
+        achados = [{"cnpj": "11111111000111", "status": "sem_resposta", "motivo": "5 dias"},
+                   {"cnpj": "22222222000122", "status": "respondeu", "motivo": "Quer orçamento", "nota": "SPDA"},
+                   {"cnpj": "33333333000133", "status": "contatado", "motivo": "Resposta seca", "rascunho": "Oi!"}]
+        hoje = date(2026, 11, 10)
+        self.assertEqual(t.cnpjs_que_mudam(achados, self.leads, hoje, status), ["11111111000111", "22222222000122"])
+        agora = datetime(2026, 11, 10, 20, 0, tzinfo=timezone.utc)
+        saida = self.tmp / "ap"
+        lotes, erros, _ = t.montar_gravacao(achados, self.leads, agora, saida, status,
+                                            {"11111111000111": 3, "22222222000122": "2"})
+        ls = json.loads((saida / "lote_status1.json").read_text(encoding="utf-8"))
+        self.assertEqual([(w["doc_id"], w["if_version"]) for w in ls], [("11111111000111", 3), ("22222222000122", 2)])
+        u = json.loads(Path(ls[1]["file_path"]).read_text(encoding="utf-8"))
+        self.assertEqual(u["status"], "respondeu")
+        self.assertEqual(u["retomarEm"], {"__delete__": True})
+        docs = [json.loads(Path(w["file_path"]).read_text(encoding="utf-8")) for w in lotes[0]]
+        self.assertEqual(docs[0]["resolvido"], "auto")          # sem_resposta: aplicado e fora da tela
+        self.assertNotIn("resolvido", docs[1])                   # respondeu: aparece para o Felipe
+        self.assertEqual(docs[1]["statusAnterior"], "contatado")
+        self.assertNotIn("aplicadoEm", docs[2])                  # status não muda
+
 
 if __name__ == "__main__":
     unittest.main()
