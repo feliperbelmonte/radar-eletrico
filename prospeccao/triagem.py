@@ -271,6 +271,7 @@ def main(argv: list[str] | None = None) -> int:
     a3.add_argument("--painel", type=Path, required=True)
     a3.add_argument("--status", type=Path, required=True)
     a3.add_argument("--achados", type=Path, required=True)
+    a3.add_argument("--agora")
     a2 = sub.add_parser("gravar")
     a2.add_argument("--versoes", type=Path, help='JSON {"cnpj": versão} dos documentos de status: aplica direto no status')
     a2.add_argument("--painel", type=Path, required=True)
