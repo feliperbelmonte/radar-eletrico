@@ -47,3 +47,7 @@
   - ANTES de abrir com texto, abra `web.whatsapp.com/send?phone=…` SEM `text` e conte as mensagens do #main (ignore o aviso de criptografia). Se já houver mensagem: não abra com texto; se for a nossa de hoje, marque contatado (conta nas 15); senão pule.
   - O painel pode não saber de envios feitos pelo Felipe (ele envia rápido, às vezes depois que a Claude já passou para a próxima) — sempre confira o histórico.
   - Se o Felipe trocar de conversa na aba (caixa com outro texto), pare de ler/navegar e espere ele dizer "continua".
+- 2026-11-11 (agendada, 08h55) — 1 enviada (E S Eletricidade). Na 2ª (Siloto), depois de ~3 min com o texto na caixa, a aba caiu em "O WhatsApp está aberto em outra janela" (o Felipe abriu o WhatsApp em outro lugar): encerrei sem clicar, sem triagem. Lições:
+  - `javascript_tool` estoura em 45 s (CDP): laço de espera de no máximo ~36 s (9 × 4 s) por chamada.
+  - Pule também nomes que não são empresa privada (ex.: "Agencia Regional de Tubarao", órgão público) — avise no fim.
+  - Siloto ficou sem marcar: na próxima execução a checagem de histórico (send?phone sem text) mostra se ele enviou pela outra janela.
