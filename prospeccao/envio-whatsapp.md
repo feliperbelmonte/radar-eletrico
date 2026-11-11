@@ -51,3 +51,8 @@
   - `javascript_tool` estoura em 45 s (CDP): laço de espera de no máximo ~36 s (9 × 4 s) por chamada.
   - Pule também nomes que não são empresa privada (ex.: "Agencia Regional de Tubarao", órgão público) — avise no fim.
   - Siloto ficou sem marcar: na próxima execução a checagem de histórico (send?phone sem text) mostra se ele enviou pela outra janela.
+- 2026-11-11 (continuação com o Felipe, ~09h15–10h05) — 15 enviadas (pulada: Agencia Regional de Tubarao, órgão público). Lições:
+  - Mesmo com o limite de 4 min, ele às vezes envia depois (Averon, Tda): no fim, antes de puxar novas da fila, reabra as "não enviadas" sem `text` e confira o histórico — se a nossa mensagem estiver lá, marque contatado (conta nas 15).
+  - Ao conferir o histórico, ignore também o aviso de "mensagens temporárias" (não é mensagem da empresa).
+  - `triagem.py cnpjs` quebrava (faltava `--agora` no subcomando) — corrigido.
+  - Varredura: a busca pelo nome não acha as empresas de 03–04/11 marcadas "BUSCAR PELO NOME" (a mensagem não citava o nome igual ou foi por outro canal): pule, sem aplicar sem_resposta.
