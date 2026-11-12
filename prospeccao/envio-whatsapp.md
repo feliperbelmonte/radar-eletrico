@@ -56,3 +56,8 @@
   - Ao conferir o histórico, ignore também o aviso de "mensagens temporárias" (não é mensagem da empresa).
   - `triagem.py cnpjs` quebrava (faltava `--agora` no subcomando) — corrigido.
   - Varredura: a busca pelo nome não acha as empresas de 03–04/11 marcadas "BUSCAR PELO NOME" (a mensagem não citava o nome igual ou foi por outro canal): pule, sem aplicar sem_resposta.
+- 2026-11-12 — 08h56 a extensão do Chrome não estava conectada (tools existiam, `list_connected_browsers` vazio): notifiquei e encerrei; o Felipe pediu para rodar de novo e às ~09h05 conectou. 15 enviadas, 1 sem WhatsApp (B&b). Lições:
+  - O aviso de número sem WhatsApp agora é "O número … não está no WhatsApp." (não "inválido"): cheque os dois textos.
+  - Pule telefone com cara de placeholder (ex.: final 990000000 — Vitorio Karan) e avise no fim.
+  - Enquanto eu enviava, outra execução fez a triagem às 09h34 (documentos `triagem` com sufixo do dia) e a aba caiu em "aberto em outra janela" às ~09h36. Antes da varredura, liste a coleção `triagem`: se já houver triagem de hoje, confira só mensagens chegadas depois dela.
+  - Para a varredura, ler o `#pane-side` rolando de 400 em 400 px e casar pelos 7 últimos dígitos (contatos aparecem como "+55 41 9975-0339", sem o 9) funciona; parar só depois de 4 rolagens sem linha nova.
