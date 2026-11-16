@@ -1,6 +1,6 @@
 ---
 name: prospeccao-plataformas
-description: Busca de demandas de projeto elétrico, laudo e perícia em plataformas de serviço (Workana, 99Freelas) e vagas PJ, gravadas na aba "Demandas em plataformas" do painel Prospecção Elétrica do Felipe. Use na tarefa agendada de terça/quinta, quando ele pedir para procurar demandas/freelas, ou para ajudar a montar a proposta de uma demanda achada.
+description: Busca de demandas de projeto elétrico, laudo e perícia em plataformas de serviço (Workana, 99Freelas) e vagas PJ, gravadas na aba "Demandas em plataformas" do painel Prospecção Elétrica do Felipe. Use na tarefa agendada diária (07h41), quando ele pedir para procurar demandas/freelas, ou para ajudar a montar a proposta de uma demanda achada.
 ---
 
 # Demandas em plataformas
@@ -11,17 +11,18 @@ Contexto geral, painel e ciclo de aprendizado: skill `prospeccao-funil`. Propost
 
 | Plataforma | Página de busca | Como ler |
 |---|---|---|
-| Workana | `https://www.workana.com/pt/jobs?language=pt&query=<termo>` | `javascript_tool`: esperar 4 s e listar `a[href*="/job/"]` (título + link). Logado na conta do Felipe. |
+| Workana | `fetch('/jobs?language=pt&query=<termo>&page=<n>')` a partir de uma página da workana.com, mais `/jobs?language=pt&skills=electrical-engineering` | `javascript_tool`: extrair do HTML o atributo `results-initials='…'`, decodificar as entidades com um `textarea` e `JSON.parse`; `.results[]` traz slug, title, description, budget, postedDate, totalBids, country, skills; `.pagination.pages` dá o total de páginas (ler até 5). Link = `https://www.workana.com/job/<slug>`. Funciona sem login (valores em USD). |
 | 99Freelas | `https://www.99freelas.com.br/projects?q=<termo>` | `javascript_tool`: esperar 3 s e listar `a[href*="/project/"]`, ignorando `/project/new`. Site liberado no navegador em 05/11/2026. |
 
-Termos: `projeto elétrico`, `engenheiro eletricista`, `spda`, `laudo elétrico`, `subestação`, `fotovoltaico homologação`, `ART elétrica`, `as built elétrico`, `perícia elétrica`, `parecer técnico engenharia elétrica`.
+Termos: `projeto elétrico`, `engenheiro eletricista`, `spda`, `aterramento`, `laudo elétrico`, `subestação`, `fotovoltaico`, `energia solar`, `homologação`, `as built elétrico`, `perícia elétrica`, `diagrama unifilar`, `luminotécnico`, `qibuilder`.
 
 Para cada demanda nova, abrir a página dela e ler com `get_page_text` (só leitura): resumo do que pedem (1 frase), local, quando foi publicada, quantas propostas já tem.
 
 ## O que entra
 
-- Só o que o Felipe pode entregar: projeto elétrico BT/MT, SPDA, laudos, ART, subestação, fotovoltaico (projeto e homologação), as built, memorial, parecer/perícia técnica elétrica.
-- Fora: só execução de obra no local, arquitetura/estrutural sem parte elétrica, site/marketing, programação de CLP pura, vaga CLT presencial.
+- Só o que o Felipe entrega 100% em home office (decisão dele em 16/11/2026: não quer sair de casa para nada): projeto elétrico BT/MT, SPDA, aterramento, laudos documentais, ART, subestação, fotovoltaico (projeto, homologação, modelagem/estudo), as built a partir de documentos, diagramas elétricos, luminotécnico, memorial, parecer/perícia técnica elétrica feita por documentos.
+- Fora: qualquer coisa que exija ir ao local (visita técnica, levantamento em campo, vistoria, instalação, montagem, comissionamento, diária presencial), execução de obra, projeto arquitetônico (ele não faz; trabalha sobre o arquitetônico pronto do cliente, em BIM no QiBuilder), estrutural/hidráulico sem parte elétrica, eletrônica/PCB, site/marketing, programação de CLP pura, vaga CLT.
+- Demanda mista (ex.: elétrico + hidráulico): entra, com a observação de que ele faz só a parte elétrica.
 - Perícia de periculosidade/insalubridade: fora (CLT art. 195, exclusiva de engenheiro ou médico do trabalho).
 - Demanda com mais de 30 dias ou já encerrada: fora.
 
@@ -44,3 +45,4 @@ Status que o Felipe usa no painel: `nova`, `proposta`, `ganha`, `descartada`.
 
 <!-- Formato: - AAAA-MM-DD — lição. Evidência: ... [hipótese | confirmada] -->
 - 2026-11-05 — Workana e 99Freelas leem bem com `javascript_tool` no navegador embutido logado; WebFetch/WebSearch não alcançam as listagens. Evidência: teste de 05/11. [confirmada]
+- 2026-11-16 — A listagem da Workana vem num JSON embutido (`results-initials`) e pode ser lida por `fetch` + `JSON.parse` sem login nem espera; varredura de 15 termos trouxe 123 demandas únicas, das quais ~20 cabem no escopo home office. Evidência: varredura manual de 16/11. [confirmada]
