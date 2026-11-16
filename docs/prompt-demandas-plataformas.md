@@ -9,6 +9,8 @@
   - varredura **todo dia** pelo navegador (agenda mudou para `CRON_TZ=America/Sao_Paulo 41 7 * * *`);
   - só serviço de **projeto/home office**: ele não quer sair de casa para nada (visita técnica, levantamento em campo, instalação, diária presencial ficam fora);
   - não faz projeto arquitetônico (recebe pronto e trabalha em BIM no QiBuilder); demanda mista entra só pela parte elétrica.
+  - limitar a **projetos no Brasil** (busca da Workana com `country=BR`);
+  - o Felipe perguntou se o Claude pode montar as propostas e enviá-las pela Workana: a tarefa diária continua só de leitura; o envio é feito em conversa, com o Felipe logado e aprovando cada proposta antes do clique em enviar.
   - Na mesma conversa foi feita uma varredura manual: 15 termos, 123 demandas únicas na Workana, ~20 no escopo. Método de leitura atualizado para o JSON `results-initials` (ver Lições da skill).
 
 ## Passo a passo do que a tarefa faz

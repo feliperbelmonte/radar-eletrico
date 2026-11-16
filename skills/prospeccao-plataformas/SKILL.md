@@ -20,6 +20,7 @@ Para cada demanda nova, abrir a página dela e ler com `get_page_text` (só leit
 
 ## O que entra
 
+- Só projetos no Brasil (decisão de 16/11/2026): na Workana, buscar com `&country=BR` e descartar item cujo `country` não seja Brasil.
 - Só o que o Felipe entrega 100% em home office (decisão dele em 16/11/2026: não quer sair de casa para nada): projeto elétrico BT/MT, SPDA, aterramento, laudos documentais, ART, subestação, fotovoltaico (projeto, homologação, modelagem/estudo), as built a partir de documentos, diagramas elétricos, luminotécnico, memorial, parecer/perícia técnica elétrica feita por documentos.
 - Fora: qualquer coisa que exija ir ao local (visita técnica, levantamento em campo, vistoria, instalação, montagem, comissionamento, diária presencial), execução de obra, projeto arquitetônico (ele não faz; trabalha sobre o arquitetônico pronto do cliente, em BIM no QiBuilder), estrutural/hidráulico sem parte elétrica, eletrônica/PCB, site/marketing, programação de CLP pura, vaga CLT.
 - Demanda mista (ex.: elétrico + hidráulico): entra, com a observação de que ele faz só a parte elétrica.
