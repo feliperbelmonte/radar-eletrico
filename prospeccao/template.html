@@ -236,7 +236,7 @@ const ROTULO = Object.fromEntries(STATUS);
 const ROTULO_TRILHA = { licitacao: "Licitação ganha", pericia: "Perícia", projeto: "Projeto" };
 const estado = { filtro: "hoje", uf: "", seg: "", tri: "", q: "", limite: 30 };
 let demandas = {};   // id -> demanda de plataforma (Workana, 99Freelas...), gravada pela tarefa agendada
-const ST_DEMANDA = [["nova", "Nova"], ["proposta", "Proposta enviada"], ["ganha", "Ganha"], ["descartada", "Descartada"]];
+const ST_DEMANDA = [["nova", "Nova"], ["fila", "Na fila de envio"], ["proposta", "Proposta enviada"], ["ganha", "Ganha"], ["descartada", "Descartada"]];
 let marcas = {};      // cnpj -> {status, quando, nota}
 let triagemDocs = {}; // id -> sugestão gravada pela triagem diária do WhatsApp (coleção "triagem")
 let triagens = {};    // cnpj -> sugestão pendente mais recente (sem "resolvido")
@@ -323,7 +323,7 @@ function renderNumeros() {
   const fuTot = f.fuPend.length + f.fuFeito.length;
   document.getElementById("hojeFu").textContent = fuTot ? `follow-ups: ${f.fuFeito.length} / ${fuTot}` : "";
   const pend = f.fuPend.length + f.novoPend.length + f.triagem.length + f.retomar.length;
-  const dNovas = Object.values(demandas).filter((d) => (d.status || "nova") === "nova").length;
+  const dNovas = Object.values(demandas).filter((d) => ["nova", "fila"].includes(d.status || "nova")).length;
   document.getElementById("chips").innerHTML = `<button class="chip hoje${estado.filtro === "hoje" ? " on" : ""}" data-f="hoje">Fila de hoje<span class="c">${pend}</span></button>`
     + `<button class="chip hoje${estado.filtro === "demandas" ? " on" : ""}" data-f="demandas">Demandas em plataformas<span class="c">${dNovas}</span></button>` + STATUS.map(([k, r]) =>
     `<button class="chip${estado.filtro === k ? " on" : ""}" data-f="${k}">${r}<span class="c">${c[k]}</span></button>`).join("")
@@ -405,21 +405,24 @@ function renderHoje() {
 function renderDemandas() {
   const lista = document.getElementById("lista");
   document.getElementById("mais").hidden = true;
-  const ordem = { nova: 0, proposta: 1, ganha: 2, descartada: 3 };
+  const ordem = { fila: 0, nova: 1, proposta: 2, ganha: 3, descartada: 4 };
   const itens = Object.entries(demandas).map(([id, d]) => ({ id, ...d }))
-    .sort((a, b) => (ordem[a.status || "nova"] - ordem[b.status || "nova"]) || String(b.encontradoEm || "").localeCompare(String(a.encontradoEm || "")));
+    .sort((a, b) => (ordem[a.status || "nova"] - ordem[b.status || "nova"]) || ((a.prioridade || 99) - (b.prioridade || 99)) || String(b.encontradoEm || "").localeCompare(String(a.encontradoEm || "")));
   document.getElementById("contagem").textContent = itens.length
-    ? `${itens.length} demanda${itens.length === 1 ? " achada" : "s achadas"} nas plataformas (terça e quinta de manhã). Responda pela própria plataforma: contato por fora dela é proibido pelas regras delas.`
-    : "Nenhuma demanda ainda. A busca nas plataformas roda terça e quinta de manhã, com o app Claude aberto no seu computador.";
+    ? `${itens.length} demanda${itens.length === 1 ? " achada" : "s achadas"} nas plataformas (busca todo dia de manhã). As da fila são enviadas duas por semana, quando o limite de contatos da Workana renova (segunda de manhã). Responda pela própria plataforma: contato por fora dela é proibido pelas regras delas.`
+    : "Nenhuma demanda ainda. A busca nas plataformas roda todo dia de manhã, com o app Claude aberto no seu computador.";
   if (!itens.length) { lista.innerHTML = `<div class="vazio">Nada por aqui ainda.</div>`; return; }
   lista.innerHTML = itens.map((d) => {
     const st = d.status || "nova";
     return `<article class="card${st !== "nova" ? " feito" : ""}" data-demanda="${esc(d.id)}">
       <div class="linha1"><div style="min-width:0"><div class="nome">${esc(d.titulo)}</div>
         <div class="local">${esc(d.plataforma)}${d.local ? " · " + esc(d.local) : ""}${d.publicado ? " · " + esc(d.publicado) : ""}${d.propostas ? " · " + esc(d.propostas) : ""}</div></div>
-        <span class="badge ${st === "nova" ? "contatado" : st === "ganha" ? "cliente" : st === "descartada" ? "sem_interesse" : "proposta"}">${esc(Object.fromEntries(ST_DEMANDA)[st] || st)}</span></div>
+        <span class="badge ${st === "nova" || st === "fila" ? "contatado" : st === "ganha" ? "cliente" : st === "descartada" ? "sem_interesse" : "proposta"}">${esc(Object.fromEntries(ST_DEMANDA)[st] || st)}</span></div>
       ${d.resumo ? `<div class="local">${esc(d.resumo)}</div>` : ""}
       ${d.encaixe ? `<div class="tags"><span class="trilha projeto">${esc(d.encaixe)}</span></div>` : ""}
+      ${d.valorCliente ? `<div class="local">${st === "fila" ? "Fila #" + esc(d.prioridade || "?") + " · " : ""}Valor ao cliente R$ ${esc(Number(d.valorCliente).toLocaleString("pt-BR"))}${d.valorLiquido ? " · você recebe ~R$ " + esc(Math.round(d.valorLiquido).toLocaleString("pt-BR")) : ""}${d.prazo ? " · " + esc(d.prazo) : ""}${d.enviadoEm ? " · enviada em " + esc(d.enviadoEm) : ""}</div>` : ""}
+      ${d.proposta ? `<details><summary class="local">Ver texto da proposta</summary><pre style="white-space:pre-wrap;font:inherit;font-size:13px">${esc(d.proposta)}</pre></details>` : ""}
+      ${Array.isArray(d.historico) && d.historico.length ? `<details><summary class="local">Histórico (${d.historico.length})</summary><div class="local">${d.historico.map(esc).join("<br>")}</div></details>` : ""}
       <div class="acoes">
         <a class="btn-wa" href="${esc(d.link)}" target="_blank" rel="noopener">Abrir na plataforma</a>
         <select data-acao="st-demanda" aria-label="Status">${ST_DEMANDA.map(([k, r]) => `<option value="${k}"${k === st ? " selected" : ""}>${r}</option>`).join("")}</select>

@@ -25,7 +25,17 @@ Contexto geral, painel e ciclo de aprendizado: skill `prospeccao-funil`.
 
 ## Tabela de preços do Felipe
 
-- (a definir com o Felipe — não inventar valores)
+- Referência (decisão de 16/11/2026): horas estimadas do escopo × R$ 130 (hora técnica de engenheiro pleno, guia de honorários ABEE-SE 2026). Valor coerente com o serviço, mesmo acima do teto do cliente. Horas e hora técnica nunca aparecem para o cliente.
+- Workana: o valor lançado é o que o cliente vê; ajustar até "Você vai receber" bater com o líquido desejado (comissão ≈20% até ~R$ 1.750, ~10% acima, menos em valores altos).
+
+## Padrão das propostas em plataformas (Workana) — FRB Gestão em Projetos
+
+1. Apresentação: engenheiro eletricista formado pela UTFPR, pós-graduado em Gerenciamento de Projetos pela PUC, atuação em projetos elétricos e obras de energia (usinas fotovoltaicas e BESS); projetos em BIM no QiBuilder (AltoQi) sobre o arquitetônico fornecido pelo cliente, em IFC, RVT, DWG ou PDF. Não citar WEG/Ultramaq nem "CREA ativo".
+2. Escopo em tópicos, valor e prazo, não incluso (arquitetônico, visita ao local, o que estiver fora), perguntas numeradas ao cliente sobre as premissas.
+3. ART: CREA-PR; obra fora do PR → mediante visto no CREA do estado, taxas por conta do contratante.
+4. Cláusula: "Caso as respostas ou solicitações posteriores alterem o escopo, o valor e o prazo serão atualizados mediante sua aprovação." Validade: 5 dias corridos. Assinatura: Felipe Rado Belmonte / FRB Gestão em Projetos LTDA.
+5. Nada de telefone, e-mail ou link externo (regra da plataforma).
+6. Ele não faz arquitetônico, não tem PVsyst (estudo FV/BESS com PVGIS + planilha) e só aceita serviço feito de casa.
 
 ## Lições aprendidas
 

@@ -27,6 +27,10 @@ Para cada demanda nova, abrir a página dela e ler com `get_page_text` (só leit
 - Perícia de periculosidade/insalubridade: fora (CLT art. 195, exclusiva de engenheiro ou médico do trabalho).
 - Demanda com mais de 30 dias ou já encerrada: fora.
 
+## Fila de propostas da Workana (desde 16/11/2026)
+
+A conta gratuita da Workana permite 2 contatos por semana. As demandas da Workana que entram no escopo ficam com status `fila`, já com a proposta redigida (padrão FRB, skill `prospeccao-proposta`), e a tarefa "Workana — enviar propostas da fila" (seg–sex 08h25) prepara as 2 melhores no Chrome quando o limite renova; o Felipe faz o CAPTCHA e envia. Detalhes e histórico: `docs/workana-fila-de-propostas.md`.
+
 ## Como gravar no painel
 
 Banco do painel (slug `52480dbe-d791-42d0-b2d1-ecacc497139b`), coleção `demandas`, um documento por demanda. Id: `w-<slug>` (Workana) ou `n-<número>` (99Freelas, o número no fim da URL). Se o documento já existe, não mexer (o Felipe pode ter mudado status ou nota). Campos:
@@ -47,3 +51,4 @@ Status que o Felipe usa no painel: `nova`, `proposta`, `ganha`, `descartada`.
 <!-- Formato: - AAAA-MM-DD — lição. Evidência: ... [hipótese | confirmada] -->
 - 2026-11-05 — Workana e 99Freelas leem bem com `javascript_tool` no navegador embutido logado; WebFetch/WebSearch não alcançam as listagens. Evidência: teste de 05/11. [confirmada]
 - 2026-11-16 — A listagem da Workana vem num JSON embutido (`results-initials`) e pode ser lida por `fetch` + `JSON.parse` sem login nem espera; varredura de 15 termos trouxe 123 demandas únicas, das quais ~20 cabem no escopo home office. Evidência: varredura manual de 16/11. [confirmada]
+- 2026-11-16 — Workana exige CAPTCHA a cada proposta e tem limite semanal de contatos (2 na conta gratuita); o formulário fica em `/messages/bid/<slug>` (#Amount, #Hours, #BidContent, #BidDeliveryTime, input[name=acknowledged], habilidade obrigatória) e mostra "Você vai receber" já descontada a comissão. Abas paradas recarregam e perdem o texto. Evidência: envio de 16/11. [confirmada]
