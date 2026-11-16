@@ -1,6 +1,6 @@
 # Workana — fila de propostas (desde 16/11/2026)
 
-> Tarefas: `trig_01YF5Y5vQwziDM2dueEhNnf3` "Prospecção Elétrica — demandas em plataformas" (todo dia 07h41, navegador embutido) e `trig_01CxCGHuYv6wiZZouvL9fYeD` "Workana — enviar propostas da fila" (seg–sex 08h25, Chrome do Felipe, vinculada ao computador dele).
+> Tarefas: `trig_01YF5Y5vQwziDM2dueEhNnf3` "Prospecção Elétrica — demandas em plataformas" (todo dia por volta das 9h — 08h58, navegador embutido) e `trig_01CxCGHuYv6wiZZouvL9fYeD` "Workana — enviar propostas da fila" (seg–sex por volta das 10h — 09h58, Chrome do Felipe, vinculada ao computador dele).
 > Dados e histórico: coleção `demandas` do banco do painel Prospecção Elétrica (https://claude.ai/artifact/BAJojSBRshrr1MRC4Eoujg), aba "Demandas em plataformas".
 
 ## Histórico de decisões (conversa de 16/11/2026)
@@ -27,10 +27,12 @@ Lavanderia comercial Enel SP: pulada pelo Felipe (anúncio de agosto, sem propos
 
 ## Passo a passo
 
-1. **Diário 07h41** — busca Workana (JSON `results-initials`, `country=BR`) e 99Freelas; filtra escopo home office; grava as novas. As da Workana entram com status `fila`, proposta redigida, `valorLiquidoAlvo`, `valorCliente` estimado, `prazo`, `prioridade` e `historico`.
-2. **Seg–sex 08h25** — sincroniza o que o Felipe enviou (Meus projetos → status `proposta`, `enviadoEm`); se a semana já tem 2 enviadas, para. Revalida a fila (encerradas → `descartada`), reordena, testa o limite abrindo o formulário da prioridade 1. Limite livre → preenche até 2 propostas em abas do Chrome (valor ajustado pelo "Você vai receber", texto, prazo, aceite, habilidade) e avisa por push. Nunca clica em enviar nem resolve CAPTCHA.
+1. **Diário ~9h (08h58)** — busca Workana (JSON `results-initials`, `country=BR`) e 99Freelas; filtra escopo home office; grava as novas. As da Workana entram com status `fila`, proposta redigida, `valorLiquidoAlvo`, `valorCliente` estimado, `prazo`, `prioridade` e `historico`.
+2. **Seg–sex ~10h (09h58)** — sincroniza o que o Felipe enviou (Meus projetos → status `proposta`, `enviadoEm`); se a semana já tem 2 enviadas, para. Revalida a fila (encerradas → `descartada`), reordena, testa o limite abrindo o formulário da prioridade 1. Limite livre → preenche até 2 propostas em abas do Chrome (valor ajustado pelo "Você vai receber", texto, prazo, aceite, habilidade) e avisa por push. Nunca clica em enviar nem resolve CAPTCHA.
 3. **Felipe** — confere as abas, faz o CAPTCHA e envia. Abas da Workana podem recarregar e perder o texto: nesse caso, pedir no chat para preencher de novo (o texto está no banco).
 
 ## Status da coleção `demandas`
 
 `nova` (99Freelas ou ainda sem proposta) · `fila` (proposta pronta aguardando limite) · `proposta` (enviada) · `ganha` · `descartada`. Campos de fila: `prioridade`, `valorLiquidoAlvo`, `valorCliente`, `valorLiquido`, `prazo`, `proposta`, `historico[]`, `enviadoEm`, `propostaPreparadaEm`.
+
+- 16/11/2026 (fim da tarde): horários ajustados a pedido do Felipe — busca diária ~9h e preparo das propostas ~10h.

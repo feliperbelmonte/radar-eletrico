@@ -1,6 +1,6 @@
 ---
 name: prospeccao-plataformas
-description: Busca de demandas de projeto elétrico, laudo e perícia em plataformas de serviço (Workana, 99Freelas) e vagas PJ, gravadas na aba "Demandas em plataformas" do painel Prospecção Elétrica do Felipe. Use na tarefa agendada diária (07h41), quando ele pedir para procurar demandas/freelas, ou para ajudar a montar a proposta de uma demanda achada.
+description: Busca de demandas de projeto elétrico, laudo e perícia em plataformas de serviço (Workana, 99Freelas) e vagas PJ, gravadas na aba "Demandas em plataformas" do painel Prospecção Elétrica do Felipe. Use na tarefa agendada diária (~9h), quando ele pedir para procurar demandas/freelas, ou para ajudar a montar a proposta de uma demanda achada.
 ---
 
 # Demandas em plataformas
@@ -29,7 +29,7 @@ Para cada demanda nova, abrir a página dela e ler com `get_page_text` (só leit
 
 ## Fila de propostas da Workana (desde 16/11/2026)
 
-A conta gratuita da Workana permite 2 contatos por semana. As demandas da Workana que entram no escopo ficam com status `fila`, já com a proposta redigida (padrão FRB, skill `prospeccao-proposta`), e a tarefa "Workana — enviar propostas da fila" (seg–sex 08h25) prepara as 2 melhores no Chrome quando o limite renova; o Felipe faz o CAPTCHA e envia. Detalhes e histórico: `docs/workana-fila-de-propostas.md`.
+A conta gratuita da Workana permite 2 contatos por semana. As demandas da Workana que entram no escopo ficam com status `fila`, já com a proposta redigida (padrão FRB, skill `prospeccao-proposta`), e a tarefa "Workana — enviar propostas da fila" (seg–sex ~10h) prepara as 2 melhores no Chrome quando o limite renova; o Felipe faz o CAPTCHA e envia. Detalhes e histórico: `docs/workana-fila-de-propostas.md`.
 
 ## Como gravar no painel
 

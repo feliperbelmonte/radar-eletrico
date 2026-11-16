@@ -1,4 +1,4 @@
-# Prompt da tarefa "Prospecção Elétrica — demandas em plataformas" (todo dia, 07h41)
+# Prompt da tarefa "Prospecção Elétrica — demandas em plataformas" (todo dia, ~9h — 08h58)
 
 > Tarefa `trig_01YF5Y5vQwziDM2dueEhNnf3`. Roteiro detalhado: skill `skills/prospeccao-plataformas/SKILL.md`.
 
@@ -6,7 +6,7 @@
 
 - 05/11/2026 — Criada para rodar terça e quinta às 07h41: busca demandas na Workana e no 99Freelas pelo navegador embutido do app Claude e grava as novas na coleção `demandas` do painel Prospecção Elétrica. Somente leitura nas plataformas.
 - 16/11/2026 — O Felipe teve o cadastro de freelancer aprovado na Workana e pediu:
-  - varredura **todo dia** pelo navegador (agenda mudou para `CRON_TZ=America/Sao_Paulo 41 7 * * *`);
+  - varredura **todo dia** pelo navegador (agenda mudou para `CRON_TZ=America/Sao_Paulo 58 8 * * *` (era 41 7 até 16/11 à tarde));
   - só serviço de **projeto/home office**: ele não quer sair de casa para nada (visita técnica, levantamento em campo, instalação, diária presencial ficam fora);
   - não faz projeto arquitetônico (recebe pronto e trabalha em BIM no QiBuilder); demanda mista entra só pela parte elétrica.
   - limitar a **projetos no Brasil** (busca da Workana com `country=BR`);
