@@ -70,3 +70,7 @@
   - Um só `browser_batch` por empresa: navigate sem text → JS que confere o histórico e, se limpo, faz `location.href = url com text` via setTimeout → `computer wait` de 3–4 s (sem isso o JS seguinte morre com "target navigated") → JS que espera o envio por 36 s.
   - Mensagens de perícia longas: monte a URL no JS com `encodeURIComponent(texto)` em vez de colar a URL codificada.
   - Variáveis `window.__*` somem a cada navigate: faça a varredura da lista lateral depois da última navegação, ou refaça.
+- 2026-11-17 (agendada 08h56 sem Chrome conectado; rodada às 09h18 a pedido do Felipe) — 15 enviadas em ~25 min, 0 sem WhatsApp. Pulei por telefone placeholder: Siaa, Arquipar, Vitorio Karan, Mazini (só 9s/0s); por nome-endereço: "Rua Benjamin Constant, 510". Lições:
+  - Abrir com texto via `location.href` dentro de `setTimeout` no JS não funcionou (caixa ficou vazia). Use 2 lotes por empresa: (1) navigate sem `text` + JS que confere o histórico; (2) se limpo, navigate com a `url` da fila (`force: true`) + espera 6 s + JS de espera.
+  - O detector por `[role=row]` + caixa vazia falhou 2 vezes (Fajardo, Celso Saldanha: mensagem com relógio, o JS seguia lendo a caixa cheia). Mais confiável: `#main.innerText` sem o `footer` contendo o nome da empresa, e conferir a lista lateral antes de dar "não enviada".
+  - A varredura do `#pane-side` a partir do topo perdeu as ~8 primeiras linhas (as conversas de hoje): leia as primeiras linhas antes de rolar.
