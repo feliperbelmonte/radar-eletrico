@@ -74,3 +74,8 @@
   - Abrir com texto via `location.href` dentro de `setTimeout` no JS não funcionou (caixa ficou vazia). Use 2 lotes por empresa: (1) navigate sem `text` + JS que confere o histórico; (2) se limpo, navigate com a `url` da fila (`force: true`) + espera 6 s + JS de espera.
   - O detector por `[role=row]` + caixa vazia falhou 2 vezes (Fajardo, Celso Saldanha: mensagem com relógio, o JS seguia lendo a caixa cheia). Mais confiável: `#main.innerText` sem o `footer` contendo o nome da empresa, e conferir a lista lateral antes de dar "não enviada".
   - A varredura do `#pane-side` a partir do topo perdeu as ~8 primeiras linhas (as conversas de hoje): leia as primeiras linhas antes de rolar.
+- 2026-11-18 (agendada 08h55 sem Chrome conectado; rodada às 09h11 a pedido do Felipe) — 16 enviadas em ~15 min (a 16ª saiu antes de eu parar), 0 sem WhatsApp. Pulei por telefone placeholder: Siaa, Arquipar, Vitorio Karan, Mazini, Gandin (só 2s e 9s); por nome-endereço: "Rua Benjamin Constant, 510". Lições:
+  - Depois de um `navigate`, o `#main` pode continuar mostrando a conversa anterior por alguns segundos (Sb Advogados): toda checagem de histórico e de envio só vale com o cabeçalho do `#main` contendo os 8 últimos dígitos do número (o cabeçalho mostra "+55 41 9956-9187", sem o 9).
+  - Detector de envio confiável: algum `#main [data-pre-plain-text]` (bolha já no histórico) contendo o nome da empresa, com o cabeçalho conferido; `innerText` do `#main` menos o `footer` deu falso positivo.
+  - Todo `navigate` deu "Sair do site?": use sempre `force: true`.
+  - Na varredura do `#pane-side`, linhas lidas logo após a rolagem vêm vazias (só o título): para as que importam (padrão sem_resposta), role de volta devagar (0,5 tela, 400 ms) e releia até ter a prévia.
