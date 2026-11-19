@@ -79,3 +79,7 @@
   - Detector de envio confiável: algum `#main [data-pre-plain-text]` (bolha já no histórico) contendo o nome da empresa, com o cabeçalho conferido; `innerText` do `#main` menos o `footer` deu falso positivo.
   - Todo `navigate` deu "Sair do site?": use sempre `force: true`.
   - Na varredura do `#pane-side`, linhas lidas logo após a rolagem vêm vazias (só o título): para as que importam (padrão sem_resposta), role de volta devagar (0,5 tela, 400 ms) e releia até ter a prévia.
+- 2026-11-19 (agendada 08h55 sem Chrome conectado; rodada às 08h57 a pedido do Felipe) — 15 enviadas em ~10 min, 1 sem WhatsApp (Cesar & Bertolin). Pulei por telefone fictício: Siaa, Arquipar, Vitorio Karan, Mazini, Gandin; por nome que não é empresa: "Rua Benjamin Constant, 510" e "Sociedade Individual de Advocacia" (sem nome próprio). Lições:
+  - Um só `browser_batch` por empresa: navigate sem `text` (`force: true`) → espera 4 s → JS que confere cabeçalho/histórico e dá `throw` se já houver mensagem ou aviso de sem WhatsApp (o erro para o lote) → navigate com a `url` (`force: true`) → espera 6 s → JS de espera. Funcionou nas 16.
+  - No `javascript_tool`, IIFE `async` devolve `{}`: use `await` no nível de cima (REPL), sem embrulhar em função.
+  - Na varredura, a lista lateral até "12/11" coube em ~45 rolagens (3 chamadas); o resultado de JS corta em ~1500 caracteres: guarde em `window.__R` e devolva em fatias curtas.
