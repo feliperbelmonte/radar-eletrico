@@ -58,6 +58,24 @@ def trilha(l: dict) -> str:
     return l.get("trilha") or "projeto"
 
 
+GENERICOS = {"sociedade", "individual", "de", "da", "do", "e", "advocacia", "advogados", "associados", "ltda", "me", "epp", "eireli", "s/a", "sa", "&", "-"}
+
+
+def motivo_invalido(l: dict) -> str | None:
+    """Cadastro que não deve entrar na fila: telefone fictício ou nome que não é de empresa."""
+    num = re.sub(r"\D", "", l.get("celular") or "")[2:]  # sem o DDD
+    if num and len(set(num)) <= 2:
+        return "telefone fictício"
+    nome = (l.get("empresa") or "").strip()
+    if re.match(r"(?i)^(rua|av\.|avenida|rodovia|travessa|alameda)\s", nome):
+        return "nome é endereço, não empresa"
+    if not [p for p in re.split(r"\s+", nome.lower()) if p and p not in GENERICOS]:
+        return "nome sem identificação da empresa"
+    if re.match(r"(?i)^(ag[eê]ncia regional|prefeitura|c[aâ]mara municipal|secretaria)\b", nome):
+        return "órgão público"
+    return None
+
+
 def montar_fila(leads: list[dict], fila_cfg: dict, status: dict, agora: datetime, meta: int | None = None) -> list[dict]:
     hoje = agora.astimezone(BRT).date()
     meta = meta or fila_cfg.get("meta") or 15
@@ -72,7 +90,7 @@ def montar_fila(leads: list[dict], fila_cfg: dict, status: dict, agora: datetime
     vagas = max(0, meta - feitos)
     livres = {t: [] for t in ORDEM_TRILHAS}
     for l in leads:
-        if status.get(l["cnpj"], {}).get("status", "a_contatar") == "a_contatar" and l.get("celular"):
+        if status.get(l["cnpj"], {}).get("status", "a_contatar") == "a_contatar" and l.get("celular") and not motivo_invalido(l):
             livres.get(trilha(l), livres["projeto"]).append(l)
     escolhidos: list[dict] = []
     for t in ORDEM_TRILHAS:

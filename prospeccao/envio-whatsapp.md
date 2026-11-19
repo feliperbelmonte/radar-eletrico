@@ -83,3 +83,4 @@
   - Um só `browser_batch` por empresa: navigate sem `text` (`force: true`) → espera 4 s → JS que confere cabeçalho/histórico e dá `throw` se já houver mensagem ou aviso de sem WhatsApp (o erro para o lote) → navigate com a `url` (`force: true`) → espera 6 s → JS de espera. Funcionou nas 16.
   - No `javascript_tool`, IIFE `async` devolve `{}`: use `await` no nível de cima (REPL), sem embrulhar em função.
   - Na varredura, a lista lateral até "12/11" coube em ~45 rolagens (3 chamadas); o resultado de JS corta em ~1500 caracteres: guarde em `window.__R` e devolva em fatias curtas.
+  - (a pedido do Felipe) `envio.py fila` agora tira da fila sozinho telefone fictício (≤2 dígitos diferentes depois do DDD), nome que é endereço, nome só com termos genéricos e órgão público (`motivo_invalido`). Os 20 cadastros assim que estavam a_contatar foram marcados "pulada" no painel com o motivo.
