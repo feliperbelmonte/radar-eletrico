@@ -9,6 +9,7 @@
 - Não edite o texto da mensagem; se algo parecer errado (nome estranho, cidade errada), pule a empresa e avise no fim.
 - Não abra nem leia outras conversas.
 - Nenhum telefone ou e-mail em notificação, commit ou mensagem final.
+- Resposta final da execução (e notificações) sempre em português (pedido do Felipe, 24/11/2026).
 
 ## Passo a passo
 
