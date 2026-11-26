@@ -96,3 +96,7 @@
   - A queda "outra janela" coincidiu com a triagem que rodou às 08h46–08h53 (documentos `triagem`/`status` com 11:53Z). Com o Felipe presente pedindo para continuar, recarregar a URL (`navigate` com `force: true`) retoma a sessão sem clicar em nada.
   - O painel pode já ter marcado a empresa (Barioni apareceu `contatado` sozinha): no `set` recusado por já existir, leia o documento e só pule se já estiver contatado.
   - Varredura rápida pós-envio: ler as ~30 primeiras linhas do `#pane-side` e casar os 7 últimos dígitos dentro do JS achou as 2 respostas do dia (Karan e Barioni → futuro).
+- 2026-11-26 (agendada 08h56 sem Chrome conectado; rodada às 08h59 a pedido do Felipe) — 15 enviadas em ~10 min, 1 sem WhatsApp (Gomes & Kloc). Mv Reis Advogados: `send?phone` duas vezes ficou na tela inicial, sem abrir conversa e sem aviso de "não está no WhatsApp" — não marquei (continua na fila). Lições:
+  - Quando a conversa não abre nem aparece aviso (só a tela inicial do WhatsApp), tente 1 vez com espera de 8 s; se repetir, pule sem marcar e siga.
+  - O `gen.py` local (fila_envio.json → browser_batch por empresa: navigate sem text `force:true` → wait 5 → JS que dá `throw` se houver mensagem/sem WhatsApp → navigate com url `force:true` → wait 6 → JS de espera) funcionou nas 16; o Felipe envia em <10 s.
+  - Varredura logo depois: mapa últimos-8-dígitos→índice da lista em `window.__M` e `__scan(45)` (3 chamadas) leu ~730 linhas sem travar; só 2 respostas novas (de 24/11, depois da última triagem) — Daniel Augusto (sem interesse) e Deziderio (futuro).
